@@ -1,0 +1,44 @@
+{
+  "name": "@vanigar/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "eslint",
+    "test:auth-guard": "tsx src/lib/auth-guard.test.ts",
+    "test:i18n": "tsx src/locales/index.test.ts",
+    "test:nav": "tsx src/components/layout/navigation.config.test.ts",
+    "test:dashboard": "tsx src/app/dashboard/dashboard.test.ts",
+    "test:errors": "tsx src/lib/error-utils.test.ts",
+    "test:feedback": "tsx src/components/feedback/feedback.test.ts",
+    "test:client": "tsx src/lib/api/client.test.ts",
+    "test:members-ui": "tsx src/app/members/members.test.ts",
+    "test:profile-ui": "tsx src/app/members/profile.test.ts",
+    "test:add-member-ui": "tsx src/app/members/new/add-member.test.ts",
+    "test:edit-member-ui": "tsx src/app/members/[memberNumber]/edit/edit-member.test.ts",
+    "test:deactivate-member": "tsx src/app/members/deactivate-member.test.ts",
+    "test:activate-member": "tsx src/app/members/activate-member.test.ts",
+    "test:daily-sheets-ui": "tsx src/app/daily-sheets/daily-sheets.test.ts",
+    "test:collections-ui": "tsx src/app/collections/collections.test.ts",
+    "test:loans-ui": "tsx src/app/loans/loans.test.ts",
+    "test:ui": "tsx src/lib/auth-guard.test.ts && tsx src/locales/index.test.ts && tsx src/components/layout/navigation.config.test.ts && tsx src/app/dashboard/dashboard.test.ts && tsx src/lib/error-utils.test.ts && tsx src/components/feedback/feedback.test.ts && tsx src/lib/api/client.test.ts && tsx src/app/members/members.test.ts && tsx src/app/members/profile.test.ts && tsx src/app/members/new/add-member.test.ts && tsx src/app/members/[memberNumber]/edit/edit-member.test.ts && tsx src/app/members/deactivate-member.test.ts && tsx src/app/members/activate-member.test.ts && tsx src/app/daily-sheets/daily-sheets.test.ts && tsx src/app/members/daily-sheet-history.test.ts && tsx src/app/collections/collections.test.ts && tsx src/app/loans/loans.test.ts"
+  },
+  "dependencies": {
+    "@vanigar/shared-types": "*",
+    "next": "16.3.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}

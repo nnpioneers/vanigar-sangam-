@@ -1,0 +1,54 @@
+{
+  "name": "vanigar-sangam",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vanigar Sangam Management System — modular monolith monorepo (Phase 1.1 repository foundation).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "npm run build:ts && npm run build:web",
+    "build:ts": "tsc -b tsconfig.json",
+    "build:web": "npm run build --workspace @vanigar/web",
+    "dev:api": "npm run dev --workspace @vanigar/api",
+    "dev:web": "npm run dev --workspace @vanigar/web",
+    "start:api": "npm run start --workspace @vanigar/api",
+    "typecheck": "tsc -b tsconfig.json && npm run typecheck --workspace @vanigar/web",
+    "lint": "eslint . && npm run lint --workspace @vanigar/web",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "npm run db:migrate --workspace @vanigar/api",
+    "db:migrate:status": "npm run db:migrate:status --workspace @vanigar/api",
+    "admin:provision": "npm run admin:provision --workspace @vanigar/api",
+    "test:schema": "npm run test:schema --workspace @vanigar/api",
+    "test:password": "npm run test:password --workspace @vanigar/api",
+    "test:session": "npm run test:session --workspace @vanigar/api",
+    "test:middleware": "npm run test:middleware --workspace @vanigar/api",
+    "test:auth-api": "npm run test:auth-api --workspace @vanigar/api",
+    "test:auth": "npm run test:auth --workspace @vanigar/api",
+    "test:core": "npm run test:core --workspace @vanigar/api",
+    "test:members": "npm run test:members --workspace @vanigar/api",
+    "test:profile": "npm run test:profile --workspace @vanigar/api",
+    "test:cash": "npm run test:cash --workspace @vanigar/api",
+    "test:daily-sheets": "npm run test:daily-sheets --workspace @vanigar/api",
+    "test:collections": "npm run test:collections --workspace @vanigar/api",
+    "test:backend": "npm run test:backend --workspace @vanigar/api",
+    "test:route-guard": "npm run test:auth-guard --workspace @vanigar/web",
+    "test:web": "npm run test:ui --workspace @vanigar/web",
+    "clean": "node scripts/clean.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.71.0"
+  }
+}

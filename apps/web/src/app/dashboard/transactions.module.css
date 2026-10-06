@@ -1,0 +1,47 @@
+
+/* Transactions */
+.transactionList {
+  display: flex;
+  flex-direction: column;
+}
+
+.transactionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: background-color var(--transition-fast);
+}
+
+.transactionItem:last-child {
+  border-bottom: none;
+}
+
+.transactionItem:hover {
+  background-color: var(--color-bg-surface-subtle);
+}
+
+.transactionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.transactionType {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-espresso-900);
+  text-transform: capitalize;
+}
+
+.transactionMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-espresso-500);
+}
+
+.transactionAmount {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}

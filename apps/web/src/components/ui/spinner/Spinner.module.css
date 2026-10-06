@@ -1,0 +1,52 @@
+.spinner {
+  display: inline-block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: currentColor;
+  border-right-color: transparent;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.md {
+  width: 20px;
+  height: 20px;
+  border-width: 2.5px;
+}
+
+.lg {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+.primary {
+  color: var(--color-primary-500);
+}
+
+.current {
+  color: currentColor;
+}
+
+.gold {
+  color: var(--color-gold-500);
+}
+
+.white {
+  color: #ffffff;
+}

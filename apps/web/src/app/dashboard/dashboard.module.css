@@ -1,0 +1,384 @@
+.dashboardContainer {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #f7f9fc;
+  min-height: 100vh;
+}
+
+.headerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: -3rem; /* overlap with title */
+  position: relative;
+  z-index: 10;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  background: #f8fafc;
+}
+
+.topActionButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quickBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  cursor: pointer;
+  flex: 1;
+  min-width: max-content;
+}
+
+.quickBtnIcon {
+  color: #059669; /* green */
+}
+
+.quickBtnIconBlue { color: #3b82f6; }
+.quickBtnIconPurple { color: #8b5cf6; }
+.quickBtnIconOrange { color: #f97316; }
+
+.dailySheetBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f5132;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.bannerTitle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bannerBadge {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.bannerText h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.bannerText p {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.bannerStats {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.statItem span:first-child {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+}
+
+.statItem span:last-child {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.statItem span.pendingValue {
+  color: #fcd34d;
+}
+
+.memberStatusBadge {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}
+
+.openSheetBtn {
+  background: white;
+  color: #0f5132;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.cardTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.cardValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.cardFooter {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cardFooter span {
+  font-weight: 600;
+}
+.cardFooter span.green { color: #10b981; }
+.cardFooter span.blue { color: #3b82f6; }
+.cardFooter span.purple { color: #8b5cf6; }
+.cardFooter span.orange { color: #f59e0b; }
+
+.iconBg {
+  background: #f1f5f9;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  color: #64748b;
+}
+
+.netBalanceCard {
+  background: #0f5132;
+  color: white;
+}
+
+.netBalanceCard .cardTitle,
+.netBalanceCard .cardFooter {
+  color: rgba(255,255,255,0.8);
+}
+.netBalanceCard .cardValue {
+  color: white;
+}
+.netBalanceCard .iconBg {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.chartsSection {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.chartCard {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.chartSubtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.chartLegend {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot.green { background: #10b981; }
+.dot.purple { background: #8b5cf6; }
+
+/* Fake Bar Chart */
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chartRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.yAxis {
+  width: 40px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: right;
+}
+.chartBars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  height: 200px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+.barGroup {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+}
+.bar {
+  width: 20px;
+  border-radius: 2px 2px 0 0;
+}
+.bar.green { background: #10b981; }
+.bar.purple { background: #8b5cf6; }
+
+/* Pending items */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+.tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+}
+.tab.active {
+  color: #0f5132;
+  border-bottom: 2px solid #0f5132;
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pendingUser {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f5132;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.userMeta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.collectBtn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #10b981;
+  color: #10b981;
+  border-radius: 0.25rem;
+  background: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}

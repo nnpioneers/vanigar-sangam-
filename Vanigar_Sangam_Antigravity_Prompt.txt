@@ -1,0 +1,153 @@
+# Antigravity Prompt — Vanigar Sangam Management System
+
+## ROLE
+You are a senior full-stack engineer and fintech-grade systems architect. Build a production-quality web application for a traders association (Vanigar Sangam) that replaces its paper-based member, daily collection, loan, guarantor and cash workflows.
+
+## GOAL
+Deliver a working Next.js + Node.js + PostgreSQL application covering: Login → Dashboard → Cash Management → Members → Daily Sheet → Collections → Loans & Repayments → Guarantors → Reports → Audit.
+
+## WORKING MODE (follow in order)
+1. **Planning mode first.** Produce an *Implementation Plan* artifact and a *Task List* artifact. Do not write code until the database schema and business-rule engine are in the plan.
+2. Build in phases (see PHASES). After each phase, run it in the browser agent and attach a *Walkthrough* artifact with screenshots.
+3. Anything marked **[CONFIRM]** is not final. Implement it as a configurable rule with a sensible default. Do not invent permanent behaviour.
+
+## TECH STACK
+- Frontend: Next.js (App Router, TypeScript), responsive desktop + mobile
+- Backend: Node.js (TypeScript) API layer, server-side validation
+- Database: PostgreSQL with migrations (Prisma or Drizzle)
+- Auth: User ID + password, hashed, session-based, role-based access
+- Payments: **physical cash only**. No online payment integration.
+- Currency: ₹ with Indian digit grouping (₹4,00,000)
+
+## CORE PRINCIPLES
+1. Member Number is unique and is the primary search key.
+2. Business rules live in the backend rule engine and a `settings` table. Never hard-code them in UI components.
+3. The ledger is append-only. Edits and undo create reversal entries. Old records are never overwritten or deleted.
+4. Contribution, loan repayment, loan disbursement and cash transfer are separate transaction types, even when entered on one screen.
+5. Dashboard and report numbers come from database queries, never constants.
+6. Every important action writes an audit log.
+7. Nominee and Guarantor are different concepts.
+
+## DATA MODEL (create first)
+`users` (admins/staff, role, active) · `members` · `member_sheets` · `nominees` · `insurance_details` · `daily_collections` · `collection_transactions` (type: CONTRIBUTION | LOAN_REPAYMENT | LOAN_DISBURSEMENT | CASH_TRANSFER) · `loans` · `loan_repayments` · `loan_guarantors` · `loan_agreements` · `cash_holdings` · `cash_transfers` · `audit_logs` · `settings`
+
+```
+Member ─┬─ Sheets, Nominee, Insurance
+        ├─ Daily Collections
+        ├─ Loans ─┬─ Repayments
+        │         ├─ Guarantors (max 3)
+        │         └─ Agreement + Disbursement confirmation
+        └─ Guarantees Given
+```
+
+Key fields:
+- **members**: member_number (unique, text, keep leading zeros e.g. `009`), name, related_person_name, relationship (enum, not hard-coded "Father"), shop_name, address, mobile, sheets, insurance_number, status
+- **nominees**: name, relationship (selectable: Wife, Husband, Mother, Father, Son, Daughter, Other), mobile
+- **loans**: loan_id (new per loan), member_id, amount, loan_date, due_date (loan_date + 100 days), status (Draft, Active, Partially Repaid, Closed, Overdue, Cancelled), cash_holder_id, closed_at
+- **loan_guarantors**: loan_id, guarantor_member_id, responsibility_amount, status. Snapshot name, phone and sheets at loan time for history.
+- **loan_agreements**: loan_id, accepted, accepted_at, received_confirmation, confirmed_by, method **[CONFIRM]**
+- **cash_holdings / cash_transfers**: admin-wise balance, transfers, received, handed over, reconciliation
+
+## BUSINESS RULES (configurable in `settings`)
+
+**Sheets and daily amount**
+- Daily amount = sheets × ₹200 (1 sheet ₹200, 2 ₹400, 3 ₹600 …). Rate configurable.
+
+**Loan maximum by sheets**
+
+| Sheets | Max loan |
+|---|---|
+| 1 | ₹2,10,000 |
+| 2 | ₹3,00,000 |
+| 3 | ₹4,00,000 |
+| 4 and above | ₹5,00,000 (absolute cap) |
+
+- There is **no** ₹18,000 starting limit and **no** "3 × monthly savings" rule.
+- Eligibility condition: the member must have fully paid their **first month**. After that they may request **any amount up to their slab maximum**.
+
+**Loan lifecycle**
+- Unlimited loans over a lifetime, but **only one active loan at a time**.
+- Maximum repayment period is **100 days**. Early full repayment and closure are allowed.
+- Loan with balance after day 100 → status **Overdue**, shown with a red mark. A new loan is **blocked** until it is settled.
+- Fully repaid → **Closed**. A new loan gets a new Loan ID, date, amount, repayments, guarantors and agreement. Guarantors are **not** auto-copied.
+
+**Guarantors**
+- Maximum **3 per loan**. Each has its own responsibility amount (e.g. ₹2,00,000 alone; or 1,00,000 + 1,00,000; or 3 × 50,000 on a 1,50,000 loan).
+- Guarantor must not be the borrower's household/family member. Prefer search by Member Number and display name, related person, relationship, shop, mobile, sheets.
+- Total responsibility must **never exceed** the loan amount. Whether it must **equal** the loan amount is **[CONFIRM]** → setting `guarantor_total_must_equal_loan` (default: false).
+- Guarantor eligibility beyond the household restriction **[CONFIRM]**.
+
+**Year-end service deduction (configurable)**
+- 1st sheet ₹1,500; 2nd sheet +₹1,000; 3rd sheet onward +₹500 each (2 sheets = 2,500; 3 = 3,000; 4 = 3,500). Continuation beyond 4 sheets **[CONFIRM]**, default +₹500 per sheet.
+
+**Open items, implement as settings and never hard-code**
+- **[CONFIRM]** Does the historical overdue flag stay permanently after settlement? Default: keep it in history, remove only the blocking status.
+- **[CONFIRM]** Agreement signature method (checkbox / typed / OTP / uploaded signature / printed / admin verification). Default: checkbox + admin verification.
+
+## MODULES AND ACCEPTANCE CRITERIA
+
+**1. Login** — User ID + password; protected routes; role-based access; logout.
+- ✔ Unauthenticated users cannot reach any management page or API.
+
+**2. Dashboard** — Total/active members, total collections, today's collection, loans given/repaid/outstanding, pending and advance collections, total cash in hand, admin-wise cash, recent transactions.
+- ✔ Every figure matches a SQL aggregate over transactions.
+
+**3. Admin / Cash Management** — Admin profile (ID, name, mobile, role, active, cash held, last update, remarks); cash history, transfers between admins, received/handed over, reconciliation.
+- ✔ Sum of admin cash holdings reconciles with the system cash balance; mismatches are flagged.
+
+**4. Members** — Registration (member no., name, related person + relationship, shop, address, mobile, sheets, nominee, insurance no.), search by Member Number, 360° profile with tabs: Overview · Personal Details · Sheets & Contributions · Daily Sheet History · Loans · Repayments · Guarantees Given · Nominee · Insurance · Transactions · Documents/Agreements.
+- ✔ Searching `009` opens the full profile and history. Duplicate member numbers are rejected.
+
+**5. Daily Sheet** (operational entry) — Columns: Member, Shop, Daily Amount, Old Arrears, Total Due, Actual Paid, Status, Payment Time, Mode (cash), Action. Status: Paid, Advance Paid, Advance Covered, Partial, Not Paid, Overdue. Payment types: Daily, Weekly, Multi-day, Full Month, Custom.
+- Previous pending + current due = total due. Excess payment covers future days.
+- Members with an active loan get a **loan repayment input** beside the contribution (e.g. ₹200 + ₹1,000 = ₹1,200 collected), stored as **two separate transactions**.
+- ✔ Entering a payment updates balances, status and dashboard immediately; undo creates a reversal.
+
+**6. Collections** (history/recap, not a duplicate of Daily Sheet) — Pick a date and see total daily collection, loan repayments, total cash, member-wise collection, pending and advance totals.
+
+**7. Loans** — Flow: Member → New Loan → Guarantors → Agreement → Cash Disbursement Confirmation → Repayments → Closure → Future Loan.
+- Member Number lookup auto-fills: member no., name, related person, relationship, shop, mobile, sheets, insurance no.
+- Form shows: Loan ID, applicable max limit, requested amount, loan date, 100-day due date, current loan status, guarantors, agreement, received confirmation.
+- Backend validates: first-month condition, sheet-slab maximum, existing active loan, overdue status, requested amount, guarantor rules.
+- Disbursement confirmation records status, date, time, Loan ID, member, responsible cash holder, amount.
+- Loan page tabs: Overview · Borrower · Loan Amount · Repayment · Guarantors · Agreement · Cash Disbursement · Timeline · Audit History.
+- ✔ A second loan is blocked while one is Active or Overdue. ✔ Loan #001 stays in history after Loan #002 is created.
+
+**8. Guarantor tracking** — For any member: guarantees given, active, closed. Selecting one shows borrower (number, name, phone, sheets), loan (ID, date, amount, due date, repaid, outstanding, days elapsed/remaining, status) and guarantor (number, name, guaranteed amount, guarantee status). Clicking a guarantor name anywhere opens that member's profile.
+
+**9. Reports** — Daily, monthly, yearly. Daily collection, Loan (issued/closed/active/overdue/outstanding/repayments), Member (count, active, sheet distribution, contributions), Cash (total, admin-wise, transfers, reconciliation). Export to Excel/CSV; print-friendly PDF.
+
+**10. Audit log** — User, action, record, date/time, details for: member created/edited, payment recorded/edited/undone, loan created/closed, repayment, guarantor added, cash transferred, admin updated.
+
+**11. Receipts** — Receipt number, member, date, transaction type, amount, Loan ID (if any), admin/cash holder; printable.
+
+## UI GUIDELINES
+Premium, clean financial dashboard. Cards, tables, badges, modals, toasts, charts. Sidebar navigation. Mobile-friendly. Digitise the paper forms as **connected workflows**, not one long form. Red badge for overdue loans; green/red/blue for covered/pending/advance.
+
+## PHASES
+1. Schema, migrations, seed data (generate programmatically, ~600 realistic Tamil Nadu members; do not hand-write records), auth and roles.
+2. Rule engine + settings table with unit tests for every rule above.
+3. Members, nominee, insurance, search, profile.
+4. Daily Sheet, Collections, ledger, receipts.
+5. Cash management and reconciliation.
+6. Loans, guarantors, agreement, disbursement, repayment, overdue job, guarantor tracking.
+7. Dashboard, reports and exports, audit log.
+8. Browser-agent end-to-end test of the full flow (below), then Walkthrough artifact.
+
+## VERIFICATION SCENARIOS (run in browser agent)
+1. Register member `009` with 1 sheet; daily amount shows ₹200.
+2. 1-sheet member requests ₹2,20,000 → rejected; ₹2,10,000 → accepted after first month paid.
+3. Add 3 guarantors totalling more than the loan → rejected; add a 4th → blocked.
+4. Active loan exists → new loan blocked. Fully repay on day 10 → Closed → new loan allowed with new ID and guarantors.
+5. Loan with balance on day 101 → red Overdue; new loan blocked until settled.
+6. Daily Sheet: ₹200 + ₹1,000 loan repayment → two transactions, dashboard updates.
+7. Transfer ₹50,000 between admins → balances and reconciliation update.
+8. Click a guarantor name → opens their profile and their guarantee list.
+
+## DO NOT
+- Do not add online payments.
+- Do not apply the old ₹18,000 limit or the 3× savings formula.
+- Do not hard-code business rules in the UI.
+- Do not delete or overwrite financial records.
+- Do not copy guarantors between loans automatically.
+- Do not decide **[CONFIRM]** items permanently. Keep them configurable and list them in the final walkthrough for the association to confirm.

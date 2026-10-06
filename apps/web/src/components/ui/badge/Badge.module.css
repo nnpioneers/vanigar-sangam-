@@ -1,0 +1,67 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* Sizes */
+.sm {
+  padding: 3px 8px;
+  font-size: var(--font-size-xs);
+}
+
+.md {
+  padding: 5px 10px;
+  font-size: var(--font-size-xs);
+}
+
+/* Dot */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Variants */
+.default {
+  background-color: var(--color-espresso-100);
+  color: var(--color-espresso-800);
+  border-color: var(--color-espresso-200);
+}
+
+.primary {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-600);
+  border-color: var(--color-primary-200);
+}
+
+.success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success-border);
+}
+
+.warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+}
+
+.danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+}
+
+.gold {
+  background-color: var(--color-gold-50);
+  color: var(--color-gold-700);
+  border-color: var(--color-gold-300);
+}

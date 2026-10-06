@@ -1,0 +1,210 @@
+/**
+ * Vanigar Sangam — Central Design Tokens
+ *
+ * Visual Identity:
+ * - Traditional Tamil Nadu Traders Association + modern financial institution
+ * - Warm ivory/cream surfaces
+ * - Terracotta / rust primary actions
+ * - Deep espresso typography
+ * - Subtle gold / brass accents
+ */
+
+:root {
+  /* =========================================================================
+     1. COLOR PALETTE
+     ========================================================================= */
+
+  /* Primary Brand (Terracotta / Deep Rust) */
+  --color-primary-50: #fdf6f2;
+  --color-primary-100: #fceade;
+  --color-primary-200: #f8d2bd;
+  --color-primary-300: #f1b392;
+  --color-primary-400: #e3895e;
+  --color-primary-500: #7e3a1e; /* Base Primary */
+  --color-primary-600: #6b2f16; /* Hover */
+  --color-primary-700: #54220e; /* Active / Pressed */
+  --color-primary-800: #421a0a;
+  --color-primary-900: #2c1006;
+  --color-primary: var(--color-primary-500);
+  --color-primary-hover: var(--color-primary-600);
+  --color-primary-active: var(--color-primary-700);
+  --color-primary-subtle: var(--color-primary-50);
+
+  /* Accent (Traditional Gold / Brass) */
+  --color-gold-50: #fdfaf0;
+  --color-gold-100: #f9f3db;
+  --color-gold-200: #f1e4b3;
+  --color-gold-300: #e7cf85;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c59b27; /* Base Gold */
+  --color-gold-600: #a37d16;
+  --color-gold-700: #7f5f0e;
+  --color-gold-subtle: var(--color-gold-100);
+
+  /* Deep Espresso & Neutral Typography */
+  --color-espresso-950: #1b100a;
+  --color-espresso-900: #2b1a12; /* Primary Headings & Dark Text */
+  --color-espresso-800: #3b2014;
+  --color-espresso-700: #463327;
+  --color-espresso-600: #584437;
+  --color-espresso-500: #6e6257; /* Secondary / Body Text */
+  --color-espresso-400: #94887d; /* Muted Text / Placeholder */
+  --color-espresso-300: #b8aea4;
+  --color-espresso-200: #dcd6ce;
+  --color-espresso-100: #efece8;
+  --color-espresso-50: #f8f6f4;
+
+  /* Surfaces & Backgrounds */
+  --color-bg-app: #f6f3ec; /* Warm ivory app background */
+  --color-bg-surface: #ffffff; /* Card / Surface background */
+  --color-bg-surface-subtle: #faf7f2; /* Secondary card background */
+  --color-bg-surface-elevated: #ffffff; /* Popovers, modals, dropdowns */
+  --color-bg-surface-highlight: #f2ebe1;
+
+  /* Borders */
+  --color-border-subtle: #e8dfc8;
+  --color-border-default: #d8cebc;
+  --color-border-strong: #bfae95;
+  --color-border-focus: var(--color-primary-500);
+
+  /* Text Roles */
+  --color-text-main: var(--color-espresso-900);
+  --color-text-muted: var(--color-espresso-500);
+  --color-text-subtle: var(--color-espresso-400);
+  --color-text-inverse: #ffffff;
+  --color-text-primary: var(--color-primary-500);
+
+  /* Status — Success (Financial receipt / active) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-500: #1b7a43;
+  --color-success-600: #15803d;
+  --color-success-700: #14532d;
+  --color-success-bg: var(--color-success-50);
+  --color-success-border: #86efac;
+  --color-success-text: var(--color-success-700);
+
+  /* Status — Warning (Pending approval / alert) */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-500: #b45309;
+  --color-warning-600: #92400e;
+  --color-warning-700: #78350f;
+  --color-warning-bg: var(--color-warning-50);
+  --color-warning-border: var(--color-warning-200);
+  --color-warning-text: var(--color-warning-700);
+
+  /* Status — Danger / Error */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-500: #a82315;
+  --color-danger-600: #991b1b;
+  --color-danger-700: #7f1d1d;
+  --color-danger-bg: var(--color-danger-50);
+  --color-danger-border: #fca5a5;
+  --color-danger-text: var(--color-danger-700);
+
+  /* Status — Info */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-500: #1d4ed8;
+  --color-info-600: #1e40af;
+  --color-info-700: #1e3a8a;
+  --color-info-bg: var(--color-info-50);
+  --color-info-border: var(--color-info-200);
+  --color-info-text: var(--color-info-700);
+
+  /* =========================================================================
+     2. TYPOGRAPHY
+     ========================================================================= */
+  --font-sans: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* =========================================================================
+     3. SPACING SCALE
+     ========================================================================= */
+  --space-0: 0;
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem;    /* 4px */
+  --space-1-5: 0.375rem; /* 6px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-2-5: 0.625rem; /* 10px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+
+  /* =========================================================================
+     4. BORDER RADIUS
+     ========================================================================= */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* =========================================================================
+     5. ELEVATION & SHADOWS
+     ========================================================================= */
+  --shadow-xs: 0 1px 2px rgba(43, 26, 18, 0.04);
+  --shadow-sm: 0 1px 3px rgba(43, 26, 18, 0.08), 0 1px 2px rgba(43, 26, 18, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(43, 26, 18, 0.08), 0 2px 4px -1px rgba(43, 26, 18, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(43, 26, 18, 0.08), 0 4px 6px -2px rgba(43, 26, 18, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(43, 26, 18, 0.1), 0 10px 10px -5px rgba(43, 26, 18, 0.04);
+  --shadow-card: 0 2px 8px rgba(43, 26, 18, 0.06), 0 1px 2px rgba(43, 26, 18, 0.04);
+  --shadow-gold: 0 4px 14px rgba(197, 155, 39, 0.22);
+  --shadow-focus: 0 0 0 3px rgba(126, 58, 30, 0.25);
+
+  /* =========================================================================
+     6. MOTION & TRANSITIONS
+     ========================================================================= */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* =========================================================================
+     7. Z-INDEX SYSTEM
+     ========================================================================= */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-drawer: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+}

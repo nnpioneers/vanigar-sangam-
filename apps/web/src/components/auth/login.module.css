@@ -1,0 +1,574 @@
+/**
+ * Login UI Design Tokens & Modular Styles
+ *
+ * Warm Tamil Nadu / local-business aesthetic inspired by the reference design:
+ * - Rich terracotta primary action
+ * - Cream / ivory background with subtle ornamental corner watermark
+ * - Deep espresso typography
+ * - Gold dividers and subtle traditional styling
+ */
+
+.loginContainer {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f6f3ec;
+  color: #2b1a12;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   LEFT PANEL (Brand Atmosphere & Scenic Marketplace)
+   ========================================================================== */
+
+.leftPanel {
+  position: relative;
+  flex: 0 0 59%;
+  width: 59%;
+  min-height: 100vh;
+  background-image: url('/assets/login-left-bg.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 48px 28px;
+  overflow: hidden;
+}
+
+/* Semi-transparent protective gradient overlay for high legibility */
+.leftOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(30, 18, 12, 0.05) 45%,
+    rgba(18, 10, 6, 0.72) 80%,
+    rgba(12, 6, 3, 0.88) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.leftTopBrand {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.emblemWrapper {
+  width: 130px;
+  height: 100px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emblemImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+}
+
+.brandTitle {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 2.15rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #3b2014;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.15;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+
+.townFlank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 6px 0 10px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.flankLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(80, 45, 28, 0.1), rgba(80, 45, 28, 0.6), rgba(80, 45, 28, 0.1));
+}
+
+.townName {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #4a2818;
+  text-transform: uppercase;
+}
+
+.togetherTag {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #3b2219;
+  margin: 0 0 14px;
+}
+
+.tamilTagline {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #2e170d;
+  max-width: 440px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+/* Left Bottom Features & Location */
+.leftBottomArea {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.featureStrip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  background: rgba(22, 13, 8, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #ffffff;
+}
+
+.featureItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.featureIcon {
+  width: 24px;
+  height: 24px;
+  color: #e5b974;
+}
+
+.featureLabel {
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #f0ebe4;
+}
+
+.locationBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #f7eedf;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.locationIcon {
+  width: 15px;
+  height: 15px;
+  color: #e5b974;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   RIGHT PANEL (Login Form Card)
+   ========================================================================== */
+
+.rightPanel {
+  position: relative;
+  flex: 0 0 41%;
+  width: 41%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 28px;
+  background-color: #f6f2ea;
+  background-image: radial-gradient(#e7decf 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Subtle traditional ornamental corner watermark */
+.ornamentCorner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 220px;
+  height: 180px;
+  background-image: url('/assets/ornament-corner.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.loginCard {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 430px;
+  background: #ffffff;
+  border: 1px solid #ebe4d8;
+  border-radius: 18px;
+  box-shadow:
+    0 14px 40px -10px rgba(60, 35, 18, 0.08),
+    0 4px 16px -2px rgba(60, 35, 18, 0.04);
+  padding: 42px 36px 32px;
+}
+
+.cardHeader {
+  margin-bottom: 24px;
+}
+
+.cardTitle {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #2d1810;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.goldAccent {
+  width: 38px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #c5a059, #dfba73);
+  margin: 10px 0 14px;
+}
+
+.cardSubtitle {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #6e6155;
+  margin: 0;
+}
+
+/* Feedback & Error Banner */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fdf3f2;
+  border: 1px solid #f6c8c4;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  color: #92281e;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.errorIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Form Styles */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #3b281d;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: #9a8b7e;
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 44px 0 42px;
+  background-color: #faf8f5;
+  border: 1.5px solid #e3dbd0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #2b1810;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #a39588;
+}
+
+.input:focus {
+  background-color: #ffffff;
+  border-color: #884323;
+  box-shadow: 0 0 0 3px rgba(136, 67, 35, 0.12);
+}
+
+.inputError {
+  border-color: #d34235 !important;
+  background-color: #fff9f9 !important;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(211, 66, 53, 0.14) !important;
+}
+
+.fieldErrorText {
+  font-size: 0.8rem;
+  color: #c03225;
+  margin-top: 2px;
+}
+
+/* Password Toggle Button */
+.togglePasswordBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #948679;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.togglePasswordBtn:hover {
+  color: #4b3022;
+}
+
+.togglePasswordBtn:focus-visible {
+  outline: 2px solid #884323;
+}
+
+/* Submit Action Button */
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  background: #7e3a1e;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(126, 58, 30, 0.24);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #6b2e15;
+  box-shadow: 0 6px 18px rgba(126, 58, 30, 0.32);
+  transform: translateY(-1px);
+}
+
+.submitBtn:active:not(:disabled) {
+  background: #55240f;
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Below Button Security Note */
+.secureNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #8c7e73;
+  margin-top: 4px;
+}
+
+.secureIcon {
+  width: 13px;
+  height: 13px;
+}
+
+/* Card Divider & Footer */
+.cardDivider {
+  height: 1px;
+  background-color: #efe8df;
+  margin: 24px 0 16px;
+  border: none;
+}
+
+.cardFooter {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #8a7c71;
+  margin: 0;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Tablets & Mobile Viewports)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .leftPanel {
+    flex: 0 0 52%;
+    width: 52%;
+    padding: 32px 28px 24px;
+  }
+
+  .rightPanel {
+    flex: 0 0 48%;
+    width: 48%;
+    padding: 24px;
+  }
+
+  .brandTitle {
+    font-size: 1.85rem;
+  }
+
+  .featureStrip {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .featureIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .featureLabel {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .loginContainer {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Compact Hero Banner for Mobile */
+  .leftPanel {
+    flex: none;
+    width: 100%;
+    min-height: auto;
+    padding: 32px 20px 24px;
+    background-position: center 30%;
+  }
+
+  .brandTitle {
+    font-size: 1.6rem;
+  }
+
+  .togetherTag {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .tamilTagline {
+    font-size: 0.9rem;
+  }
+
+  .featureStrip {
+    display: none; /* Hide heavy feature grid on compact mobile header */
+  }
+
+  .locationBar {
+    margin-top: 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Full Focus on Login Card */
+  .rightPanel {
+    flex: 1;
+    width: 100%;
+    min-height: auto;
+    padding: 24px 16px 40px;
+    background-size: 18px 18px;
+  }
+
+  .loginCard {
+    max-width: 100%;
+    padding: 28px 20px 24px;
+    border-radius: 14px;
+  }
+
+  .cardTitle {
+    font-size: 1.55rem;
+  }
+
+  .ornamentCorner {
+    width: 140px;
+    height: 110px;
+    opacity: 0.45;
+  }
+}

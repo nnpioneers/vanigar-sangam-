@@ -1,0 +1,246 @@
+.container {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.sectionHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionIconWrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-espresso-900);
+  margin: 0;
+}
+
+.countBadge {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-espresso-700);
+  background-color: var(--color-espresso-100);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.loadingContainer {
+  padding: var(--space-6) 0;
+}
+
+/* Summary Strip */
+.summaryStrip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-espresso-50);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.summaryLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-espresso-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: var(--font-weight-medium);
+}
+
+.summaryValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-espresso-900);
+}
+
+.paidColor {
+  color: var(--color-success-700);
+}
+
+.balanceColor {
+  color: var(--color-warning-700);
+}
+
+/* Table Wrapper */
+.tableWrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.dateCell {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.boldCell {
+  font-weight: var(--font-weight-bold);
+}
+
+.paidCell {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success-700);
+}
+
+.balanceCell {
+  color: var(--color-warning-700);
+  font-weight: var(--font-weight-semibold);
+}
+
+.statusCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.mutedText {
+  color: var(--color-espresso-400);
+  font-size: var(--font-size-xs);
+}
+
+.correctBtn {
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+/* Mobile View */
+.mobileCardsList {
+  display: none;
+}
+
+.mobileCard {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mobileCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: var(--space-2);
+}
+
+.mobileDate {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-espresso-900);
+}
+
+.mobileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.mobileField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobileLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-espresso-500);
+}
+
+.mobileVal {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-espresso-900);
+}
+
+.mobileValBold {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-espresso-900);
+}
+
+.mobileValPaid {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-success-700);
+}
+
+.mobileActionRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-1);
+}
+
+/* Pagination Bar */
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.pageInfo {
+  font-size: var(--font-size-xs);
+  color: var(--color-espresso-600);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Responsive queries */
+@media (max-width: 768px) {
+  .tableWrapper {
+    display: none;
+  }
+  .mobileCardsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .summaryStrip {
+    gap: var(--space-3);
+  }
+}
