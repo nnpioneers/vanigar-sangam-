@@ -12,6 +12,11 @@ import { Input, Button } from '@/components/ui';
 import { formatRupees } from '@/lib/formatters';
 import { apiRequest } from '@/lib/api/client';
 
+const getLocalISODate = (d: Date) => {
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString().slice(0, 10);
+};
+
 export default function DailySheetsPage() {
   const { user, loading: authLoading } = useAuth();
   const { summary, loading: dashboardLoading } = useDashboard();
@@ -30,11 +35,12 @@ export default function DailySheetsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
-    // Default to a week that includes today
-    d.setDate(d.getDate() - d.getDay() + 1); // Start of week (Monday)
+    const dom = d.getDate();
+    const chunkStart = Math.floor((dom - 1) / 7) * 7 + 1;
+    d.setDate(chunkStart);
     return d;
   });
-  const [payments, setPayments] = useState<Record<string, Record<string, {s: boolean, l: boolean}>>>({});
+  const [payments, setPayments] = useState<Record<string, Record<string, {s: boolean, l: boolean, sDate?: string, lDate?: string}>>>({});
 
   // 7 days calculation
   const days = Array.from({length: 7}, (_, i) => {
@@ -50,7 +56,7 @@ export default function DailySheetsPage() {
         const s = new Date(days[0]);
         s.setDate(s.getDate() - 30);
         const sDate = s.toISOString().slice(0, 10);
-        const eDate = days[6].toISOString().slice(0, 10);
+        const eDate = getLocalISODate(days[6]);
         const res = await apiRequest<{ data: any }>(`/daily-sheets/grid?startDate=${sDate}&endDate=${eDate}`);
         
         const { members, loans, dailySheets, repayments } = res.data;
@@ -125,7 +131,7 @@ export default function DailySheetsPage() {
   if (authLoading || dashboardLoading) return <LoadingState label="Loading..." fullscreen />;
   if (!user || !summary) return null;
 
-  const actualTodayStr = new Date().toISOString().slice(0, 10);
+  const actualTodayStr = getLocalISODate(new Date());
 
   // Override metrics for testing
   const activeMembersCount = membersList.length;
@@ -156,12 +162,25 @@ export default function DailySheetsPage() {
   const nextWeek = () => {
     const next = new Date(currentDate);
     next.setDate(next.getDate() + 7);
+    if (next.getMonth() !== currentDate.getMonth()) {
+        next.setDate(1);
+    }
     setCurrentDate(next);
   };
   
   const prevWeek = () => {
     const prev = new Date(currentDate);
-    prev.setDate(prev.getDate() - 7);
+    if (currentDate.getDate() === 1) {
+       prev.setDate(0); // Last day of prev month
+       const lastDay = prev.getDate();
+       const chunkStart = Math.floor((lastDay - 1) / 7) * 7 + 1;
+       prev.setDate(chunkStart);
+    } else {
+       prev.setDate(prev.getDate() - 7);
+       if (prev.getMonth() !== currentDate.getMonth()) {
+           prev.setDate(1);
+       }
+    }
     setCurrentDate(prev);
   };
 
@@ -187,9 +206,9 @@ export default function DailySheetsPage() {
           ...(prev[rowId] || {}),
           [dateStr]: { 
              s: s || prev[rowId]?.[dateStr]?.s || false, 
-             sDate: s ? new Date().toISOString().slice(0,10) : prev[rowId]?.[dateStr]?.sDate,
+             sDate: s ? getLocalISODate(new Date()) : prev[rowId]?.[dateStr]?.sDate,
              l: l || prev[rowId]?.[dateStr]?.l || false,
-             lDate: l ? new Date().toISOString().slice(0,10) : prev[rowId]?.[dateStr]?.lDate
+             lDate: l ? getLocalISODate(new Date()) : prev[rowId]?.[dateStr]?.lDate
           }
         }
       }));
@@ -236,7 +255,7 @@ export default function DailySheetsPage() {
         }
       }).catch(console.error);
 
-      const actualTodayStr = new Date().toISOString().slice(0, 10);
+      const actualTodayStr = getLocalISODate(new Date());
       setPayments(prev => ({
         ...prev,
         [row.id]: {
@@ -358,8 +377,8 @@ export default function DailySheetsPage() {
             {monthName}
           </div>
           {days.map((d, i) => {
-             const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
-             const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+             const isToday = getLocalISODate(d) === actualTodayStr;
+             const isSelected = getLocalISODate(d) === getLocalISODate(selectedDate);
              return (
              <div key={i} onClick={() => setSelectedDate(d)} style={{ cursor: 'pointer', flex: 1, background: isSelected ? '#f0fdf4' : '#fff', border: isSelected ? '2px solid #16a34a' : (isToday ? '1px solid #16a34a' : '1px solid #e2e8f0'), borderRadius: '0.375rem', padding: '0.5rem 0', textAlign: 'center', minWidth: '80px' }}>
                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: isToday ? '#16a34a' : 'var(--color-espresso-900)' }}>{d.getDate()}/{d.getMonth() + 1}</div>
@@ -383,8 +402,8 @@ export default function DailySheetsPage() {
                 <th style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0' }} rowSpan={2}>SHOP NAME</th>
                 <th style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0', textAlign: 'center' }} rowSpan={2}>SAVINGS / LOAN (₹)</th>
                 {days.map((d, i) => {
-                  const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
-                  const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+                  const isToday = getLocalISODate(d) === actualTodayStr;
+                  const isSelected = getLocalISODate(d) === getLocalISODate(selectedDate);
                   const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
                   const color = isToday ? '#16a34a' : 'inherit';
                   return (
@@ -398,8 +417,8 @@ export default function DailySheetsPage() {
               </tr>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: 'var(--color-espresso-600)', fontWeight: 600, fontSize: '0.75rem' }}>
                 {days.map((d, i) => {
-                   const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
-                   const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+                   const isToday = getLocalISODate(d) === actualTodayStr;
+                   const isSelected = getLocalISODate(d) === getLocalISODate(selectedDate);
                    const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
                    const color = isToday ? '#16a34a' : 'inherit';
                    return (
@@ -422,8 +441,8 @@ export default function DailySheetsPage() {
                 </tr>
               ) : (
                 tableData.map((row, i) => {
-                  const todayDateStr = new Date().toISOString().slice(0,10);
-                  const selectedDateStr = selectedDate.toISOString().slice(0, 10);
+                  const todayDateStr = getLocalISODate(new Date());
+                  const selectedDateStr = getLocalISODate(selectedDate);
                   const rowPayments = payments[row.id]?.[selectedDateStr] || { s: false, l: false };
                   const isFullyPaid = rowPayments.s && (!row.hasLoan || rowPayments.l);
 
@@ -454,7 +473,7 @@ export default function DailySheetsPage() {
                       )}
                     </td>
                     {days.map((d, dayIndex) => {
-                       const dateStr = d.toISOString().slice(0,10);
+                       const dateStr = getLocalISODate(d);
                        const dayPayments = payments[row.id]?.[dateStr] || { s: false, l: false };
                        const isPast = d < new Date(new Date().setHours(0,0,0,0));
                        const isFuture = d > new Date(new Date().setHours(0,0,0,0));
@@ -509,7 +528,7 @@ export default function DailySheetsPage() {
                          );
                        };
 
-                       const isSelected = dateStr === selectedDate.toISOString().slice(0, 10);
+                       const isSelected = dateStr === getLocalISODate(selectedDate);
                        const isToday = dateStr === actualTodayStr;
                        const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
                        const shadow = isSelected ? 'inset 0 0 8px rgba(22, 163, 74, 0.2)' : 'none';
@@ -581,7 +600,7 @@ export default function DailySheetsPage() {
             return;
           }
           
-          const actualTodayStr = new Date().toISOString().slice(0,10);
+          const actualTodayStr = getLocalISODate(new Date());
           
           const newPrev = { ...payments };
           if (!newPrev[customPayModal.id]) newPrev[customPayModal.id] = {};
@@ -589,7 +608,7 @@ export default function DailySheetsPage() {
           let sRemaining = customSCount;
           let lRemaining = customLCount;
           
-          const orderedDates = [...days.map(d => d.toISOString().slice(0,10))];
+          const orderedDates = [...days.map(d => getLocalISODate(d))];
           if (!orderedDates.includes(actualTodayStr)) orderedDates.push(actualTodayStr);
           orderedDates.sort();
           
@@ -612,7 +631,7 @@ export default function DailySheetsPage() {
           
           while(sRemaining > 0) {
              advanceDateS.setDate(advanceDateS.getDate() + 1);
-             const advStr = advanceDateS.toISOString().slice(0,10);
+             const advStr = getLocalISODate(advanceDateS);
              if (!newPrev[customPayModal.id][advStr]?.s) {
                 newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), s: true, sDate: actualTodayStr };
                 sRemaining--;
@@ -621,7 +640,7 @@ export default function DailySheetsPage() {
           
           while(lRemaining > 0 && customPayModal.hasLoan) {
              advanceDateL.setDate(advanceDateL.getDate() + 1);
-             const advStr = advanceDateL.toISOString().slice(0,10);
+             const advStr = getLocalISODate(advanceDateL);
              if (!newPrev[customPayModal.id][advStr]?.l) {
                 newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), l: true, lDate: actualTodayStr };
                 lRemaining--;
@@ -652,7 +671,7 @@ export default function DailySheetsPage() {
         }}
       >
         {(() => {
-           const actualTodayStr = new Date().toISOString().slice(0,10);
+           const actualTodayStr = getLocalISODate(new Date());
            let sArrearsCount = 0;
            let lArrearsCount = 0;
            let sTodayMissing = false;
@@ -665,7 +684,7 @@ export default function DailySheetsPage() {
                   return d;
                });
                for (const d of arrearsDays) {
-                  const dStr = d.toISOString().slice(0,10);
+                  const dStr = getLocalISODate(d);
                   if (dStr < actualTodayStr) {
                      if (!payments[customPayModal.id]?.[dStr]?.s) sArrearsCount++;
                      if (customPayModal.hasLoan && !payments[customPayModal.id]?.[dStr]?.l) lArrearsCount++;
@@ -772,7 +791,7 @@ export default function DailySheetsPage() {
         onConfirm={async () => {
           if (!pastPayModal) return;
           const { row, dateStr, type } = pastPayModal;
-          const actualTodayStr = new Date().toISOString().slice(0, 10);
+          const actualTodayStr = getLocalISODate(new Date());
           const dayPayments = payments[row.id]?.[dateStr] || { s: false, l: false };
           
           setPayments(prev => ({
