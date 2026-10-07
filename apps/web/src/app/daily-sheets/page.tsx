@@ -25,6 +25,7 @@ export default function DailySheetsPage() {
   const [customLCount, setCustomLCount] = useState(0);
   const [membersList, setMembersList] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     // Default to a week that includes today
@@ -44,7 +45,9 @@ export default function DailySheetsPage() {
     const fetchGridData = async () => {
       setLoadingMembers(true);
       try {
-        const sDate = days[0].toISOString().slice(0, 10);
+        const s = new Date(days[0]);
+        s.setDate(s.getDate() - 30);
+        const sDate = s.toISOString().slice(0, 10);
         const eDate = days[6].toISOString().slice(0, 10);
         const res = await apiRequest<{ data: any }>(`/daily-sheets/grid?startDate=${sDate}&endDate=${eDate}`);
         
@@ -338,8 +341,9 @@ export default function DailySheetsPage() {
           </div>
           {days.map((d, i) => {
              const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
+             const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
              return (
-             <div key={i} style={{ flex: 1, background: isToday ? '#f0fdf4' : '#fff', border: isToday ? '1px solid #16a34a' : '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '0.5rem 0', textAlign: 'center', minWidth: '80px' }}>
+             <div key={i} onClick={() => setSelectedDate(d)} style={{ cursor: 'pointer', flex: 1, background: isSelected ? '#f0fdf4' : '#fff', border: isSelected ? '2px solid #16a34a' : (isToday ? '1px solid #16a34a' : '1px solid #e2e8f0'), borderRadius: '0.375rem', padding: '0.5rem 0', textAlign: 'center', minWidth: '80px' }}>
                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: isToday ? '#16a34a' : 'var(--color-espresso-900)' }}>{d.getDate()}/{d.getMonth() + 1}</div>
                <div style={{ fontSize: '0.75rem', color: isToday ? '#16a34a' : 'var(--color-espresso-500)' }}>{d.toLocaleDateString('en-US', {weekday: 'short'})}</div>
              </div>
@@ -389,7 +393,8 @@ export default function DailySheetsPage() {
               ) : (
                 tableData.map((row, i) => {
                   const todayDateStr = new Date().toISOString().slice(0,10);
-                  const rowPayments = payments[row.id]?.[todayDateStr] || { s: false, l: false };
+                  const selectedDateStr = selectedDate.toISOString().slice(0, 10);
+                  const rowPayments = payments[row.id]?.[selectedDateStr] || { s: false, l: false };
                   const isFullyPaid = rowPayments.s && (!row.hasLoan || rowPayments.l);
 
                   return (
@@ -498,7 +503,7 @@ export default function DailySheetsPage() {
                              Paid
                            </button>
                         ) : (
-                           <button style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '0.375rem 0.75rem', borderRadius: '0.25rem', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }} onClick={() => handlePay(row.id, todayDateStr, true, row.hasLoan)}>
+                           <button style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '0.375rem 0.75rem', borderRadius: '0.25rem', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }} onClick={() => handlePay(row.id, selectedDateStr, true, row.hasLoan)}>
                              Pay (₹{(row.daily + row.loan) / 100})
                            </button>
                         )}
@@ -590,6 +595,24 @@ export default function DailySheetsPage() {
                 }
              }
              
+             
+          // Perform actual API calls for all custom payments sequentially to persist
+          for (const dStr of Object.keys(newPrev[customPayModal.id])) {
+             const dayP = newPrev[customPayModal.id][dStr];
+             if (dayP.sDate === actualTodayStr || dayP.lDate === actualTodayStr) {
+                 await apiRequest('/daily-sheets/record-payment', {
+                    method: 'POST',
+                    body: {
+                       memberId: customPayModal.memberId,
+                       businessDate: dStr,
+                       savingsAmountPaise: dayP.sDate === actualTodayStr ? customPayModal.daily : 0,
+                       loanAmountPaise: dayP.lDate === actualTodayStr ? customPayModal.loan : 0,
+                       loanId: customPayModal.loanId
+                    }
+                 }).catch(console.error);
+             }
+          }
+
              return newPrev;
           });
           
@@ -605,7 +628,12 @@ export default function DailySheetsPage() {
            let lTodayMissing = false;
            
            if (customPayModal) {
-               for (const d of days) {
+               const arrearsDays = Array.from({length: 30}, (_, i) => {
+                  const d = new Date(actualTodayStr);
+                  d.setDate(d.getDate() - 30 + i);
+                  return d;
+               });
+               for (const d of arrearsDays) {
                   const dStr = d.toISOString().slice(0,10);
                   if (dStr < actualTodayStr) {
                      if (!payments[customPayModal.id]?.[dStr]?.s) sArrearsCount++;
