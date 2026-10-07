@@ -33,8 +33,6 @@ export default function DailySheetsPage() {
   });
   const [payments, setPayments] = useState<Record<string, Record<string, {s: boolean, l: boolean}>>>({});
 
-  const [arrearsData, setArrearsData] = useState<any>(null);
-
   // 7 days calculation
   const days = Array.from({length: 7}, (_, i) => {
     const d = new Date(currentDate);
@@ -116,10 +114,6 @@ export default function DailySheetsPage() {
     if (customPayModal) {
       setCustomSCount(1);
       setCustomLCount(customPayModal.hasLoan ? 1 : 0);
-      setArrearsData(null);
-      apiRequest<{ data: any }>(`/daily-sheets/arrears/${customPayModal.memberId}`)
-        .then(res => setArrearsData(res.data))
-        .catch(err => console.error("Failed to fetch arrears", err));
     }
   }, [customPayModal]);
   
@@ -154,15 +148,15 @@ export default function DailySheetsPage() {
      pendingCollectionsCount: activeMembersCount - todayCollectionCount
   };
 
-  const nextDay = () => {
+  const nextWeek = () => {
     const next = new Date(currentDate);
-    next.setDate(next.getDate() + 1);
+    next.setDate(next.getDate() + 7);
     setCurrentDate(next);
   };
   
-  const prevDay = () => {
+  const prevWeek = () => {
     const prev = new Date(currentDate);
-    prev.setDate(prev.getDate() - 1);
+    prev.setDate(prev.getDate() - 7);
     setCurrentDate(prev);
   };
 
@@ -261,16 +255,16 @@ export default function DailySheetsPage() {
               <svg style={{ position: 'absolute', left: '0.75rem', top: '0.625rem', width: '16px', height: '16px', color: '#6366f1' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               <input type="text" placeholder="Search member name, shop, or ID..." style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', width: '100%', border: '1px solid #e2e8f0', borderRadius: '0.375rem', outline: 'none' }} />
             </div>
-            <input 
-              type="date" 
-              value={currentDate.toISOString().slice(0, 10)}
-              onChange={(e) => {
-                if (e.target.value) {
-                  setCurrentDate(new Date(e.target.value));
-                }
-              }} 
-              style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#fff', outline: 'none', color: 'var(--color-espresso-900)', fontWeight: 600 }} 
-            />
+            <select value={currentDate.getMonth()} onChange={(e) => {
+              const newMonthIndex = parseInt(e.target.value, 10);
+              const newDate = new Date(2026, newMonthIndex, 1);
+              setCurrentDate(newDate);
+            }} style={{ padding: '0.5rem 2rem 0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#fff' }}>
+              {Array.from({length: 12}, (_, i) => {
+                const d = new Date(2026, i, 1);
+                return <option key={i} value={i}>{d.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</option>;
+              })}
+            </select>
             <select style={{ padding: '0.5rem 2rem 0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#fff' }}>
               <option>All Categories</option>
             </select>
@@ -335,7 +329,7 @@ export default function DailySheetsPage() {
 
         {/* 7 Days Navigator Row */}
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', overflowX: 'auto' }}>
-          <button onClick={prevDay} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={prevWeek} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, cursor: 'pointer' }}>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
           </button>
           <div style={{ background: '#16a34a', color: '#fff', borderRadius: '0.375rem', padding: '0.5rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, minWidth: '160px', justifyContent: 'center' }}>
@@ -351,7 +345,7 @@ export default function DailySheetsPage() {
              </div>
              );
           })}
-          <button onClick={nextDay} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={nextWeek} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, cursor: 'pointer' }}>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
           </button>
         </div>
@@ -539,7 +533,7 @@ export default function DailySheetsPage() {
         isOpen={Boolean(customPayModal)}
         onClose={() => setCustomPayModal(null)}
         title={`Custom Payment for ${customPayModal?.name}`}
-        description="Select the amounts you are paying today. The system will automatically clear all old dues first."
+        description="Select the amounts you are paying. Arrears will be cleared first."
         confirmLabel={`Pay ₹${customTotal}`}
         cancelLabel="Cancel"
         onConfirm={async () => {
@@ -548,175 +542,165 @@ export default function DailySheetsPage() {
             return;
           }
           
-          if (!arrearsData) {
-            notification.error("Arrears data is still loading. Please try again in a moment.");
-            return;
-          }
-
           const actualTodayStr = new Date().toISOString().slice(0,10);
-          const actualToday = new Date(actualTodayStr);
           
-          // Calculate dates to apply savings
-          const sDatesToApply = [];
-          const missingS = arrearsData.savings.missedDates || [];
-          
-          for (let i = 0; i < customSCount; i++) {
-             if (i < missingS.length) {
-               sDatesToApply.push(missingS[i]);
-             } else {
-               const targetD = new Date(actualToday);
-               targetD.setDate(actualToday.getDate() + (i - missingS.length));
-               sDatesToApply.push(targetD.toISOString().slice(0,10));
-             }
-          }
-
-          // Calculate dates to apply loans
-          const lDatesToApply = [];
-          const missingL = arrearsData.loan.missedDates || [];
-          
-          for (let i = 0; i < customLCount; i++) {
-             if (i < missingL.length) {
-               lDatesToApply.push(missingL[i]);
-             } else {
-               const targetD = new Date(actualToday);
-               targetD.setDate(actualToday.getDate() + (i - missingL.length));
-               lDatesToApply.push(targetD.toISOString().slice(0,10));
-             }
-          }
-
-          // Combine all unique dates to make API calls
-          const uniqueDates = Array.from(new Set([...sDatesToApply, ...lDatesToApply]));
-          
-          try {
-            await Promise.all(uniqueDates.map(dateStr => {
-              const applyS = sDatesToApply.includes(dateStr);
-              const applyL = lDatesToApply.includes(dateStr);
-              return apiRequest('/daily-sheets/record-payment', {
-                method: 'POST',
-                body: {
-                  memberId: customPayModal.memberId,
-                  businessDate: dateStr,
-                  savingsAmountPaise: applyS ? customPayModal.daily : 0,
-                  loanAmountPaise: applyL ? customPayModal.loan : 0,
-                  loanId: customPayModal.loanId
+          setPayments(prev => {
+             const newPrev = { ...prev };
+             if (!newPrev[customPayModal.id]) newPrev[customPayModal.id] = {};
+             
+             let sRemaining = customSCount;
+             let lRemaining = customLCount;
+             
+             const orderedDates = [...days.map(d => d.toISOString().slice(0,10))];
+             if (!orderedDates.includes(actualTodayStr)) orderedDates.push(actualTodayStr);
+             orderedDates.sort();
+             
+             let advanceDateS = new Date(actualTodayStr);
+             let advanceDateL = new Date(actualTodayStr);
+             
+             for (const dStr of orderedDates) {
+                if (dStr > actualTodayStr) break;
+                
+                const p = newPrev[customPayModal.id][dStr] || { s: false, l: false };
+                if (!p.s && sRemaining > 0) {
+                   newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], s: true, sDate: actualTodayStr };
+                   sRemaining--;
                 }
-              });
-            }));
-            
-            // Update local state
-            setPayments(prev => {
-               const newPrev = { ...prev };
-               if (!newPrev[customPayModal.id]) newPrev[customPayModal.id] = {};
-               
-               sDatesToApply.forEach(dateStr => {
-                  newPrev[customPayModal.id][dateStr] = {
-                     ...(newPrev[customPayModal.id][dateStr] || { s: false, l: false }),
-                     s: true,
-                     sDate: actualTodayStr
-                  };
-               });
-               lDatesToApply.forEach(dateStr => {
-                  newPrev[customPayModal.id][dateStr] = {
-                     ...(newPrev[customPayModal.id][dateStr] || { s: false, l: false }),
-                     l: true,
-                     lDate: actualTodayStr
-                  };
-               });
-               
-               return newPrev;
-            });
-            
-            notification.success("Custom payments recorded successfully");
-            setCustomPayModal(null);
-          } catch (e: any) {
-            notification.error(e.message || 'Failed to record custom payments');
-          }
+                if (!p.l && customPayModal.hasLoan && lRemaining > 0) {
+                   newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], l: true, lDate: actualTodayStr };
+                   lRemaining--;
+                }
+             }
+             
+             while(sRemaining > 0) {
+                advanceDateS.setDate(advanceDateS.getDate() + 1);
+                const advStr = advanceDateS.toISOString().slice(0,10);
+                if (!newPrev[customPayModal.id][advStr]?.s) {
+                   newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), s: true, sDate: actualTodayStr };
+                   sRemaining--;
+                }
+             }
+             
+             while(lRemaining > 0 && customPayModal.hasLoan) {
+                advanceDateL.setDate(advanceDateL.getDate() + 1);
+                const advStr = advanceDateL.toISOString().slice(0,10);
+                if (!newPrev[customPayModal.id][advStr]?.l) {
+                   newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), l: true, lDate: actualTodayStr };
+                   lRemaining--;
+                }
+             }
+             
+             return newPrev;
+          });
+          
+          notification.success("Custom payments recorded successfully");
+          setCustomPayModal(null);
         }}
       >
-        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          
-          {(() => {
-             if (!arrearsData) return <div style={{ color: 'var(--color-espresso-500)', fontSize: '0.875rem' }}>Loading arrears...</div>;
-             
-             const missingSCount = arrearsData.savings.missedDates.length;
-             const missingLCount = arrearsData.loan.missedDates.length;
-             
-             const sArrearsPaidCount = Math.min(customSCount, missingSCount);
-             const sAdvancePaidCount = Math.max(0, customSCount - missingSCount);
-             
-             const lArrearsPaidCount = Math.min(customLCount, missingLCount);
-             const lAdvancePaidCount = Math.max(0, customLCount - missingLCount);
+        {(() => {
+           const actualTodayStr = new Date().toISOString().slice(0,10);
+           let sArrearsCount = 0;
+           let lArrearsCount = 0;
+           let sTodayMissing = false;
+           let lTodayMissing = false;
+           
+           if (customPayModal) {
+               for (const d of days) {
+                  const dStr = d.toISOString().slice(0,10);
+                  if (dStr < actualTodayStr) {
+                     if (!payments[customPayModal.id]?.[dStr]?.s) sArrearsCount++;
+                     if (customPayModal.hasLoan && !payments[customPayModal.id]?.[dStr]?.l) lArrearsCount++;
+                  } else if (dStr === actualTodayStr) {
+                     if (!payments[customPayModal.id]?.[dStr]?.s) sTodayMissing = true;
+                     if (customPayModal.hasLoan && !payments[customPayModal.id]?.[dStr]?.l) lTodayMissing = true;
+                  }
+               }
+           }
+           
+           const sArrearsCovered = Math.min(sArrearsCount, customSCount);
+           const sTodayCovered = Math.min(sTodayMissing ? 1 : 0, Math.max(0, customSCount - sArrearsCount));
+           const sAdvanceCovered = Math.max(0, customSCount - sArrearsCount - (sTodayMissing ? 1 : 0));
+           
+           const lArrearsCovered = Math.min(lArrearsCount, customLCount);
+           const lTodayCovered = Math.min(lTodayMissing ? 1 : 0, Math.max(0, customLCount - lArrearsCount));
+           const lAdvanceCovered = Math.max(0, customLCount - lArrearsCount - (lTodayMissing ? 1 : 0));
+           
+           const sRemArrears = sArrearsCount - sArrearsCovered;
+           const lRemArrears = lArrearsCount - lArrearsCovered;
 
-             const remainingSCount = missingSCount - sArrearsPaidCount;
-             const remainingLCount = missingLCount - lArrearsPaidCount;
-             
-             const remainingSAmount = remainingSCount * (customPayModal?.daily / 100);
-             const remainingLAmount = remainingLCount * (customPayModal?.loan / 100);
-             
-             const advanceSAmount = sAdvancePaidCount * (customPayModal?.daily / 100);
-             const advanceLAmount = lAdvancePaidCount * (customPayModal?.loan / 100);
-             
-             return (
-               <>
-                 {/* Arrears Red Box (Only show if there are actual missing days initially) */}
-                 {(missingSCount > 0 || missingLCount > 0) && (
-                   <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', color: '#991b1b', fontSize: '0.875rem', transition: 'all 0.2s' }}>
-                     <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1rem' }}>Past Due (Arrears)</div>
-                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        {missingSCount > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>Savings Arrears:</span>
-                            {remainingSCount > 0 ? (
-                              <strong>₹{remainingSAmount} <span style={{fontSize:'0.75rem', fontWeight:'normal'}}>({remainingSCount} days pending)</span></strong>
-                            ) : (
-                              <strong style={{color: '#16a34a'}}>₹0 (Cleared!)</strong>
-                            )}
+           return (
+             <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+               
+               {/* Savings Breakdown */}
+               <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Savings Amount</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
+                       <button onClick={() => setCustomSCount(Math.max(0, customSCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
+                       <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customSCount}</span>
+                       <button onClick={() => setCustomSCount(customSCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+                     {sArrearsCount > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                           <span style={{ color: '#64748b' }}>Balance Due ({sArrearsCount} days):</span>
+                           <span style={{ fontWeight: 600, color: sRemArrears > 0 ? '#ef4444' : '#16a34a' }}>₹{((sRemArrears) * (customPayModal?.daily || 0)) / 100}</span>
+                        </div>
+                     )}
+                     {sTodayMissing && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                           <span style={{ color: '#64748b' }}>Present (Today):</span>
+                           <span style={{ fontWeight: 600, color: sTodayCovered === 0 ? '#ef4444' : '#16a34a' }}>₹{((1 - sTodayCovered) * (customPayModal?.daily || 0)) / 100}</span>
+                        </div>
+                     )}
+                     {sAdvanceCovered > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                           <span style={{ color: '#64748b' }}>Advance Paid:</span>
+                           <span style={{ fontWeight: 600, color: '#16a34a' }}>+ ₹{(sAdvanceCovered * (customPayModal?.daily || 0)) / 100}</span>
+                        </div>
+                     )}
+                  </div>
+               </div>
+               
+               {/* Loan Breakdown */}
+               {customPayModal?.hasLoan && (
+                 <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: '#fff' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Loan Repayment</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
+                         <button onClick={() => setCustomLCount(Math.max(0, customLCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
+                         <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customLCount}</span>
+                         <button onClick={() => setCustomLCount(customLCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+                       {lArrearsCount > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                             <span style={{ color: '#64748b' }}>Balance Due ({lArrearsCount} days):</span>
+                             <span style={{ fontWeight: 600, color: lRemArrears > 0 ? '#ef4444' : '#16a34a' }}>₹{((lRemArrears) * (customPayModal?.loan || 0)) / 100}</span>
                           </div>
-                        )}
-                        {missingLCount > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
-                            <span>Loan Arrears:</span>
-                            {remainingLCount > 0 ? (
-                              <strong>₹{remainingLAmount} <span style={{fontSize:'0.75rem', fontWeight:'normal'}}>({remainingLCount} days pending)</span></strong>
-                            ) : (
-                              <strong style={{color: '#16a34a'}}>₹0 (Cleared!)</strong>
-                            )}
+                       )}
+                       {lTodayMissing && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                             <span style={{ color: '#64748b' }}>Present (Today):</span>
+                             <span style={{ fontWeight: 600, color: lTodayCovered === 0 ? '#ef4444' : '#16a34a' }}>₹{((1 - lTodayCovered) * (customPayModal?.loan || 0)) / 100}</span>
                           </div>
-                        )}
-                     </div>
-                   </div>
-                 )}
-
-                 {/* Current & Advance Payments Green Box */}
-                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: advanceSAmount > 0 ? '#f0fdf4' : '#fff' }}>
-                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                     <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Current / Advance Savings</span>
-                     <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{advanceSAmount}</span>
-                   </div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
-                      <button onClick={() => setCustomSCount(Math.max(0, customSCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
-                      <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customSCount}</span>
-                      <button onClick={() => setCustomSCount(customSCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
-                   </div>
+                       )}
+                       {lAdvanceCovered > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                             <span style={{ color: '#64748b' }}>Advance Paid:</span>
+                             <span style={{ fontWeight: 600, color: '#16a34a' }}>+ ₹{(lAdvanceCovered * (customPayModal?.loan || 0)) / 100}</span>
+                          </div>
+                       )}
+                    </div>
                  </div>
-                 
-                 {customPayModal?.hasLoan && (
-                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: advanceLAmount > 0 ? '#f0fdf4' : '#fff' }}>
-                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                       <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Current / Advance Loan</span>
-                       <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{advanceLAmount}</span>
-                     </div>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
-                        <button onClick={() => setCustomLCount(Math.max(0, customLCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
-                        <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customLCount}</span>
-                        <button onClick={() => setCustomLCount(customLCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
-                     </div>
-                   </div>
-                 )}
-               </>
-             );
-          })()}
-        </div>
+               )}
+             </div>
+           );
+        })()}
       </ConfirmDialog>
 
       <ConfirmDialog
