@@ -24,6 +24,8 @@ export default function DailySheetsPage() {
   const [customSCount, setCustomSCount] = useState(0);
   const [customLCount, setCustomLCount] = useState(0);
   const [membersList, setMembersList] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(() => {
@@ -120,7 +122,7 @@ export default function DailySheetsPage() {
     }
   }, [customPayModal]);
   
-  if (authLoading || dashboardLoading || loadingMembers) return <LoadingState label="Loading..." fullscreen />;
+  if (authLoading || dashboardLoading) return <LoadingState label="Loading..." fullscreen />;
   if (!user || !summary) return null;
 
   const actualTodayStr = new Date().toISOString().slice(0, 10);
@@ -222,6 +224,18 @@ export default function DailySheetsPage() {
          return;
       }
       
+      // Make actual API call
+      apiRequest('/daily-sheets/record-payment', {
+        method: 'POST',
+        body: {
+          memberId: row.memberId,
+          businessDate: dateStr,
+          savingsAmountPaise: type === 's' ? (!isChecked ? row.daily : 0) : 0,
+          loanAmountPaise: type === 'l' ? (!isChecked ? row.loan : 0) : 0,
+          loanId: row.loanId
+        }
+      }).catch(console.error);
+
       const actualTodayStr = new Date().toISOString().slice(0, 10);
       setPayments(prev => ({
         ...prev,
@@ -237,14 +251,18 @@ export default function DailySheetsPage() {
     }
   };
 
-  const tableData = membersList;
+  const tableData = membersList.filter(m => {
+    const matchesSearch = !searchTerm || m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.shop.toLowerCase().includes(searchTerm.toLowerCase()) || m.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat = categoryFilter === 'All Categories' || m.category === categoryFilter;
+    return matchesSearch && matchesCat;
+  });
 
   const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const customTotal = ((customSCount ? customSCount * customPayModal?.daily : 0) + (customLCount ? customLCount * customPayModal?.loan : 0)) / 100;
 
   return (
     <AppShell>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1rem', width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1rem', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', opacity: loadingMembers ? 0.6 : 1, transition: 'opacity 0.2s' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -256,7 +274,7 @@ export default function DailySheetsPage() {
             {/* Top search & filter matching image */}
             <div style={{ position: 'relative', flexGrow: 1 }}>
               <svg style={{ position: 'absolute', left: '0.75rem', top: '0.625rem', width: '16px', height: '16px', color: '#6366f1' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" placeholder="Search member name, shop, or ID..." style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', width: '100%', border: '1px solid #e2e8f0', borderRadius: '0.375rem', outline: 'none' }} />
+              <input type="text" placeholder="Search member name, shop, or ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', width: '100%', border: '1px solid #e2e8f0', borderRadius: '0.375rem', outline: 'none' }} />
             </div>
             <select value={currentDate.getMonth()} onChange={(e) => {
               const newMonthIndex = parseInt(e.target.value, 10);
