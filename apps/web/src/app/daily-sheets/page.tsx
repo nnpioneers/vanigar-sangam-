@@ -364,23 +364,35 @@ export default function DailySheetsPage() {
                 <th style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0' }} rowSpan={2}>MEMBER NAME</th>
                 <th style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0' }} rowSpan={2}>SHOP NAME</th>
                 <th style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0', textAlign: 'center' }} rowSpan={2}>SAVINGS / LOAN (₹)</th>
-                {days.map((d, i) => (
-                  <th key={i} style={{ padding: '0.5rem 0.25rem', textAlign: 'center', borderRight: '1px solid #e2e8f0', minWidth: '40px' }}>
+                {days.map((d, i) => {
+                  const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
+                  const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+                  const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
+                  const color = isToday ? '#16a34a' : 'inherit';
+                  return (
+                  <th key={i} style={{ padding: '0.5rem 0.25rem', textAlign: 'center', borderRight: '1px solid #e2e8f0', minWidth: '40px', background: bg, color: color, fontWeight: isToday ? 800 : 600 }}>
                     {d.getDate()}/{d.getMonth() + 1}<br/>
-                    <span style={{fontWeight: 400, textTransform: 'capitalize'}}>{d.toLocaleDateString('en-US', {weekday: 'short'})}</span>
+                    <span style={{fontWeight: isToday ? 700 : 400, textTransform: 'capitalize'}}>{d.toLocaleDateString('en-US', {weekday: 'short'})}</span>
                   </th>
-                ))}
+                  );
+                })}
                 <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }} rowSpan={2}>ACTION</th>
               </tr>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: 'var(--color-espresso-600)', fontWeight: 600, fontSize: '0.75rem' }}>
-                {days.map((d, i) => (
-                   <th key={i} style={{ padding: '0.25rem 0', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
+                {days.map((d, i) => {
+                   const isToday = d.toISOString().slice(0, 10) === actualTodayStr;
+                   const isSelected = d.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+                   const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
+                   const color = isToday ? '#16a34a' : 'inherit';
+                   return (
+                   <th key={i} style={{ padding: '0.25rem 0', textAlign: 'center', borderRight: '1px solid #e2e8f0', background: bg, color: color, fontWeight: isToday ? 800 : 600 }}>
                      <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
                        <span style={{flex: 1, textAlign: 'center'}}>S</span>
                        <span style={{flex: 1, textAlign: 'center'}}>L</span>
                      </div>
                    </th>
-                ))}
+                   );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -479,8 +491,12 @@ export default function DailySheetsPage() {
                          );
                        };
 
+                       const isSelected = dateStr === selectedDate.toISOString().slice(0, 10);
+                       const isToday = dateStr === actualTodayStr;
+                       const bg = isSelected ? '#dcfce7' : (isToday ? '#f0fdf4' : 'transparent');
+                       const shadow = isSelected ? 'inset 0 0 8px rgba(22, 163, 74, 0.2)' : 'none';
                        return (
-                         <td key={dayIndex} style={{ padding: '0.5rem', textAlign: 'center', borderRight: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
+                         <td key={dayIndex} style={{ padding: '0.5rem', textAlign: 'center', borderRight: '1px solid #e2e8f0', verticalAlign: 'middle', background: bg, boxShadow: shadow }}>
                            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%' }}>
                              <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                                {renderCheckbox(dayPayments.s, 's')}
