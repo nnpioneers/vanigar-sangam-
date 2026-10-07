@@ -549,53 +549,51 @@ export default function DailySheetsPage() {
           
           const actualTodayStr = new Date().toISOString().slice(0,10);
           
-          setPayments(prev => {
-             const newPrev = { ...prev };
-             if (!newPrev[customPayModal.id]) newPrev[customPayModal.id] = {};
+          const newPrev = { ...payments };
+          if (!newPrev[customPayModal.id]) newPrev[customPayModal.id] = {};
+          
+          let sRemaining = customSCount;
+          let lRemaining = customLCount;
+          
+          const orderedDates = [...days.map(d => d.toISOString().slice(0,10))];
+          if (!orderedDates.includes(actualTodayStr)) orderedDates.push(actualTodayStr);
+          orderedDates.sort();
+          
+          let advanceDateS = new Date(actualTodayStr);
+          let advanceDateL = new Date(actualTodayStr);
+          
+          for (const dStr of orderedDates) {
+             if (dStr > actualTodayStr) break;
              
-             let sRemaining = customSCount;
-             let lRemaining = customLCount;
-             
-             const orderedDates = [...days.map(d => d.toISOString().slice(0,10))];
-             if (!orderedDates.includes(actualTodayStr)) orderedDates.push(actualTodayStr);
-             orderedDates.sort();
-             
-             let advanceDateS = new Date(actualTodayStr);
-             let advanceDateL = new Date(actualTodayStr);
-             
-             for (const dStr of orderedDates) {
-                if (dStr > actualTodayStr) break;
-                
-                const p = newPrev[customPayModal.id][dStr] || { s: false, l: false };
-                if (!p.s && sRemaining > 0) {
-                   newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], s: true, sDate: actualTodayStr };
-                   sRemaining--;
-                }
-                if (!p.l && customPayModal.hasLoan && lRemaining > 0) {
-                   newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], l: true, lDate: actualTodayStr };
-                   lRemaining--;
-                }
+             const p = newPrev[customPayModal.id][dStr] || { s: false, l: false };
+             if (!p.s && sRemaining > 0) {
+                newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], s: true, sDate: actualTodayStr };
+                sRemaining--;
              }
-             
-             while(sRemaining > 0) {
-                advanceDateS.setDate(advanceDateS.getDate() + 1);
-                const advStr = advanceDateS.toISOString().slice(0,10);
-                if (!newPrev[customPayModal.id][advStr]?.s) {
-                   newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), s: true, sDate: actualTodayStr };
-                   sRemaining--;
-                }
+             if (!p.l && customPayModal.hasLoan && lRemaining > 0) {
+                newPrev[customPayModal.id][dStr] = { ...newPrev[customPayModal.id][dStr], l: true, lDate: actualTodayStr };
+                lRemaining--;
              }
-             
-             while(lRemaining > 0 && customPayModal.hasLoan) {
-                advanceDateL.setDate(advanceDateL.getDate() + 1);
-                const advStr = advanceDateL.toISOString().slice(0,10);
-                if (!newPrev[customPayModal.id][advStr]?.l) {
-                   newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), l: true, lDate: actualTodayStr };
-                   lRemaining--;
-                }
+          }
+          
+          while(sRemaining > 0) {
+             advanceDateS.setDate(advanceDateS.getDate() + 1);
+             const advStr = advanceDateS.toISOString().slice(0,10);
+             if (!newPrev[customPayModal.id][advStr]?.s) {
+                newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), s: true, sDate: actualTodayStr };
+                sRemaining--;
              }
-             
-             
+          }
+          
+          while(lRemaining > 0 && customPayModal.hasLoan) {
+             advanceDateL.setDate(advanceDateL.getDate() + 1);
+             const advStr = advanceDateL.toISOString().slice(0,10);
+             if (!newPrev[customPayModal.id][advStr]?.l) {
+                newPrev[customPayModal.id][advStr] = { ...(newPrev[customPayModal.id][advStr] || {s:false, l:false}), l: true, lDate: actualTodayStr };
+                lRemaining--;
+             }
+          }
+          
           // Perform actual API calls for all custom payments sequentially to persist
           for (const dStr of Object.keys(newPrev[customPayModal.id])) {
              const dayP = newPrev[customPayModal.id][dStr];
@@ -613,8 +611,7 @@ export default function DailySheetsPage() {
              }
           }
 
-             return newPrev;
-          });
+          setPayments(newPrev);
           
           notification.success("Custom payments recorded successfully");
           setCustomPayModal(null);
