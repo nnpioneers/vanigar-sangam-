@@ -640,58 +640,82 @@ export default function DailySheetsPage() {
              
              const missingSCount = arrearsData.savings.missedDates.length;
              const missingLCount = arrearsData.loan.missedDates.length;
-             const missingSAmount = arrearsData.savings.missedAmountPaise / 100;
-             const missingLAmount = arrearsData.loan.missedAmountPaise / 100;
              
-             const remainingSCount = Math.max(0, missingSCount - customSCount);
-             const remainingLCount = Math.max(0, missingLCount - customLCount);
-             const remainingSAmount = Math.max(0, missingSAmount - (customSCount * (customPayModal?.daily / 100)));
-             const remainingLAmount = Math.max(0, missingLAmount - (customLCount * (customPayModal?.loan / 100)));
+             const sArrearsPaidCount = Math.min(customSCount, missingSCount);
+             const sAdvancePaidCount = Math.max(0, customSCount - missingSCount);
              
-             if (missingSCount > 0 || missingLCount > 0) {
-               return (
-                 <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', color: '#991b1b', fontSize: '0.875rem' }}>
-                   <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1rem' }}>Balance Alert</div>
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      {missingSCount > 0 && (
-                        <div>• <strong>Savings Balance:</strong> ₹{remainingSAmount} (Unpaid for {remainingSCount} days)</div>
-                      )}
-                      {missingLCount > 0 && (
-                        <div>• <strong>Loan Balance:</strong> ₹{remainingLAmount} (Unpaid for {remainingLCount} days)</div>
-                      )}
-                   </div>
-                   <div style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.75rem' }}>Adding amounts automatically clears these old dues first before advancing to future dates.</div>
-                 </div>
-               );
-             }
-             return null;
-          })()}
+             const lArrearsPaidCount = Math.min(customLCount, missingLCount);
+             const lAdvancePaidCount = Math.max(0, customLCount - missingLCount);
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: customSCount > 0 ? '#f0fdf4' : '#fff' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Savings Amount</span>
-              <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{(customPayModal?.daily * customSCount) / 100}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
-               <button onClick={() => setCustomSCount(Math.max(0, customSCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
-               <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customSCount}</span>
-               <button onClick={() => setCustomSCount(customSCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
-            </div>
-          </div>
-          
-          {customPayModal?.hasLoan && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: customLCount > 0 ? '#f0fdf4' : '#fff' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Loan Repayment</span>
-                <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{(customPayModal?.loan * customLCount) / 100}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
-                 <button onClick={() => setCustomLCount(Math.max(0, customLCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
-                 <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customLCount}</span>
-                 <button onClick={() => setCustomLCount(customLCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
-              </div>
-            </div>
-          )}
+             const remainingSCount = missingSCount - sArrearsPaidCount;
+             const remainingLCount = missingLCount - lArrearsPaidCount;
+             
+             const remainingSAmount = remainingSCount * (customPayModal?.daily / 100);
+             const remainingLAmount = remainingLCount * (customPayModal?.loan / 100);
+             
+             const advanceSAmount = sAdvancePaidCount * (customPayModal?.daily / 100);
+             const advanceLAmount = lAdvancePaidCount * (customPayModal?.loan / 100);
+             
+             return (
+               <>
+                 {/* Arrears Red Box (Only show if there are actual missing days initially) */}
+                 {(missingSCount > 0 || missingLCount > 0) && (
+                   <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', color: '#991b1b', fontSize: '0.875rem', transition: 'all 0.2s' }}>
+                     <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1rem' }}>Past Due (Arrears)</div>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        {missingSCount > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Savings Arrears:</span>
+                            {remainingSCount > 0 ? (
+                              <strong>₹{remainingSAmount} <span style={{fontSize:'0.75rem', fontWeight:'normal'}}>({remainingSCount} days pending)</span></strong>
+                            ) : (
+                              <strong style={{color: '#16a34a'}}>₹0 (Cleared!)</strong>
+                            )}
+                          </div>
+                        )}
+                        {missingLCount > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
+                            <span>Loan Arrears:</span>
+                            {remainingLCount > 0 ? (
+                              <strong>₹{remainingLAmount} <span style={{fontSize:'0.75rem', fontWeight:'normal'}}>({remainingLCount} days pending)</span></strong>
+                            ) : (
+                              <strong style={{color: '#16a34a'}}>₹0 (Cleared!)</strong>
+                            )}
+                          </div>
+                        )}
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Current & Advance Payments Green Box */}
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: advanceSAmount > 0 ? '#f0fdf4' : '#fff' }}>
+                   <div style={{ display: 'flex', flexDirection: 'column' }}>
+                     <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Current / Advance Savings</span>
+                     <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{advanceSAmount}</span>
+                   </div>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
+                      <button onClick={() => setCustomSCount(Math.max(0, customSCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
+                      <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customSCount}</span>
+                      <button onClick={() => setCustomSCount(customSCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
+                   </div>
+                 </div>
+                 
+                 {customPayModal?.hasLoan && (
+                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: advanceLAmount > 0 ? '#f0fdf4' : '#fff' }}>
+                     <div style={{ display: 'flex', flexDirection: 'column' }}>
+                       <span style={{ fontWeight: 700, color: 'var(--color-espresso-900)' }}>Current / Advance Loan</span>
+                       <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>₹{advanceLAmount}</span>
+                     </div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', padding: '0.25rem' }}>
+                        <button onClick={() => setCustomLCount(Math.max(0, customLCount - 1))} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>-</button>
+                        <span style={{ fontWeight: 600, minWidth: '20px', textAlign: 'center' }}>{customLCount}</span>
+                        <button onClick={() => setCustomLCount(customLCount + 1)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: '#f1f5f9', borderRadius: '0.25rem', cursor: 'pointer', color: '#475569' }}>+</button>
+                     </div>
+                   </div>
+                 )}
+               </>
+             );
+          })()}
         </div>
       </ConfirmDialog>
 
