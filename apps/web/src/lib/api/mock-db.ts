@@ -44,34 +44,7 @@ export function interceptApiRequest(path: string, options: ApiRequestOptions): a
     }
   }
 
-  // --- MEMBERS ---
-  if (basePath.startsWith('/members')) {
-    if (method === 'GET' && basePath === '/members') {
-      return { data: { members, totalCount: members.length, page: 1, pageSize: 100 } };
-    }
-    
-    if (method === 'POST' && basePath === '/members') {
-      const body = options.body as any;
-      const newMember = {
-        ...body,
-        id: Math.random().toString(36).substring(7),
-        memberNumber: body.memberNumber || `VS-10${Math.floor(100 + Math.random() * 900)}`,
-        numberOfSheets: Number(body.numberOfSheets || 1),
-        status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      members.push(newMember);
-      return { data: { member: newMember } };
-    }
-    
-    if (method === 'GET' && basePath.includes('/profile')) {
-      const memberNumber = basePath.split('/')[2];
-      const member = members.find(m => m.memberNumber === decodeURIComponent(memberNumber));
-      if (member) return { data: { profile: member } };
-      throw new Error("Not found");
-    }
-  }
+  // --- MEMBERS (Removed mock to use real database) ---
 
   // --- DAILY SHEETS ---
   if (basePath.startsWith('/daily-sheets')) {
