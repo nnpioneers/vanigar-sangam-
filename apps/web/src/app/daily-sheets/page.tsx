@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useNotification } from '@/hooks/useNotification';
@@ -249,8 +250,8 @@ export default function DailySheetsPage() {
         body: {
           memberId: row.memberId,
           businessDate: dateStr,
-          savingsAmountPaise: type === 's' ? (!isChecked ? row.daily : 0) : 0,
-          loanAmountPaise: type === 'l' ? (!isChecked ? row.loan : 0) : 0,
+          savingsAmountPaise: type === 's' ? (!isChecked ? row.daily : 0) : (dayPayments.s ? row.daily : 0),
+          loanAmountPaise: type === 'l' ? (!isChecked ? row.loan : 0) : (dayPayments.l ? row.loan : 0),
           loanId: row.loanId
         }
       }).catch(console.error);
@@ -449,9 +450,13 @@ export default function DailySheetsPage() {
                   return (
                   <tr key={row.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '0.75rem 0.5rem', fontWeight: 500, borderRight: '1px solid #e2e8f0' }}>{i + 1}</td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 700, color: '#16a34a', borderRight: '1px solid #e2e8f0' }}>{row.id}</td>
+                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 700, borderRight: '1px solid #e2e8f0' }}>
+  <Link href={`/members/${row.memberId}`} style={{ color: '#16a34a', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.id}</Link>
+</td>
                     <td style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--color-espresso-900)' }}>{row.name}</div>
+                      <div style={{ fontWeight: 600 }}>
+  <Link href={`/members/${row.memberId}`} style={{ color: 'var(--color-espresso-900)', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.name}</Link>
+</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#8b5cf6', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                         <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
                         {row.phone}
