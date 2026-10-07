@@ -112,8 +112,8 @@ export default function DailySheetsPage() {
 
   useEffect(() => {
     if (customPayModal) {
-      setCustomSCount(1);
-      setCustomLCount(customPayModal.hasLoan ? 1 : 0);
+      setCustomSCount(0);
+      setCustomLCount(0);
     }
   }, [customPayModal]);
   
