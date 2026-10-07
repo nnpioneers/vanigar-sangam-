@@ -22,6 +22,7 @@ import {
   correctDailySheetController,
   getDailySheetsGridDataController,
   recordPaymentController,
+  getMemberArrearsController,
 } from './daily-sheets.controller.js';
 import type { AppModule } from '../module.types.js';
 
@@ -45,6 +46,11 @@ dailySheetsRouter.get(
   '/member/:memberNumber',
   validateParams(validateMemberNumberParam),
   getMemberDailySheetHistoryController
+);
+
+dailySheetsRouter.get(
+  '/arrears/:memberId',
+  getMemberArrearsController
 );
 
 dailySheetsRouter.get(
