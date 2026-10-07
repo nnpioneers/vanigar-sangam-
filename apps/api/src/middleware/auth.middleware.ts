@@ -103,7 +103,7 @@ export function clearSessionCookie(res: Response): void {
 export async function sessionMiddleware(req: Request, _res: Response, next: NextFunction): Promise<void> {
   // BYPASS: Mocking an authenticated user session for development/testing UI exploration
   const authContext: RequestAuthContext = {
-    id: 'b6f4e135-23c3-4d7a-8f5b-5511b84e1b8b', // Mock Admin UUID
+    id: '00000000-0000-0000-0000-000000000000', // Mock Admin UUID
     username: 'admin',
     fullName: 'System Administrator',
     role: 'SUPER_ADMIN',
@@ -120,7 +120,7 @@ export async function sessionMiddleware(req: Request, _res: Response, next: Next
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   // BYPASS: Mocking an authenticated user session for development/testing UI exploration
   const authContext: RequestAuthContext = {
-    id: 'b6f4e135-23c3-4d7a-8f5b-5511b84e1b8b', // Mock Admin UUID
+    id: '00000000-0000-0000-0000-000000000000', // Mock Admin UUID
     username: 'admin',
     fullName: 'System Administrator',
     role: 'SUPER_ADMIN',

@@ -20,6 +20,8 @@ import {
   listDailySheetsController,
   getMemberDailySheetHistoryController,
   correctDailySheetController,
+  getDailySheetsGridDataController,
+  recordPaymentController,
 } from './daily-sheets.controller.js';
 import type { AppModule } from '../module.types.js';
 
@@ -43,6 +45,17 @@ dailySheetsRouter.get(
   '/member/:memberNumber',
   validateParams(validateMemberNumberParam),
   getMemberDailySheetHistoryController
+);
+
+dailySheetsRouter.get(
+  '/grid',
+  getDailySheetsGridDataController
+);
+
+dailySheetsRouter.post(
+  '/record-payment',
+  requireRole('SUPER_ADMIN', 'ADMIN'),
+  recordPaymentController
 );
 
 dailySheetsRouter.post(

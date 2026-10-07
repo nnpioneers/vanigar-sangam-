@@ -34,10 +34,10 @@ export function interceptApiRequest(path: string, options: ApiRequestOptions): a
   // --- AUTH ---
   if (basePath.startsWith('/auth')) {
     if (method === 'POST' && basePath === '/auth/login') {
-      return { data: { user: { id: 'admin-test-123', role: 'SUPER_ADMIN', fullName: 'Test Admin', status: 'ACTIVE' } } };
+      return { data: { user: { id: '00000000-0000-0000-0000-000000000000', role: 'SUPER_ADMIN', fullName: 'Test Admin', status: 'ACTIVE' } } };
     }
     if (method === 'GET' && basePath === '/auth/me') {
-      return { data: { user: { id: 'admin-test-123', role: 'SUPER_ADMIN', fullName: 'Test Admin', status: 'ACTIVE' } } };
+      return { data: { user: { id: '00000000-0000-0000-0000-000000000000', role: 'SUPER_ADMIN', fullName: 'Test Admin', status: 'ACTIVE' } } };
     }
     if (method === 'POST' && basePath === '/auth/logout') {
       return { data: { message: 'Logged out successfully' } };

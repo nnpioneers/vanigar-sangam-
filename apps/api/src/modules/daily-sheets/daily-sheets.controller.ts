@@ -11,6 +11,7 @@ import { MemberRepository } from '../members/members.repository.js';
 import { sendCreated, sendSuccess, sendPaginated } from '../../controllers/base.controller.js';
 import type { ValidatedCreateDailySheetPayload, ValidatedCorrectDailySheetPayload } from './daily-sheets.validation.js';
 import type { DailySheetListFilter } from './daily-sheets.types.js';
+import { getDbPool } from '../../database/index.js';
 
 let dailySheetServiceInstance: DailySheetService | null = null;
 
@@ -102,4 +103,115 @@ export async function correctDailySheetController(req: Request, res: Response): 
   const payload = req.validatedBody as ValidatedCorrectDailySheetPayload;
   const result = await service.correctDailySheet(id, payload.reason, adminId, adminRole, { requestId: req.id });
   sendSuccess(res, result);
+}
+
+/**
+ * GET /api/v1/daily-sheets/grid
+ * Retrieves grid data for daily sheets and loans in a specific date range.
+ * MOCKED FOR TESTING: Generates 4 members (2 with loans) to demonstrate the UI.
+ */
+export async function getDailySheetsGridDataController(req: Request, res: Response): Promise<void> {
+   const { startDate, endDate } = req.query;
+   if (!startDate || !endDate) {
+     res.status(400).json({ error: { message: 'startDate and endDate required' } });
+     return;
+   }
+
+   try {
+     const pool = getDbPool();
+     
+     // Get all active members
+     const membersResult = await pool.query(`
+       SELECT id, member_number, member_name, mobile_number, shop_name, number_of_sheets 
+       FROM members WHERE status = 'ACTIVE' ORDER BY member_number ASC
+     `);
+     const members = membersResult.rows;
+
+     // Get active loans
+     const loansResult = await pool.query(`
+       SELECT id as loan_id, member_id, approved_amount_paise 
+       FROM loans WHERE status IN ('ACTIVE', 'PARTIALLY_REPAID')
+     `);
+     const loans = loansResult.rows;
+
+     // Get daily sheets within date range
+     const sheetsResult = await pool.query(`
+       SELECT member_id, TO_CHAR(business_date, 'YYYY-MM-DD') as business_date, actual_paid_paise 
+       FROM daily_sheets 
+       WHERE business_date >= $1 AND business_date <= $2 AND status = 'COMPLETED'
+     `, [startDate, endDate]);
+     const dailySheets = sheetsResult.rows;
+
+     // Get loan repayments within date range
+     const repaysResult = await pool.query(`
+       SELECT l.member_id, TO_CHAR(r.repayment_date, 'YYYY-MM-DD') as business_date, r.amount_paise 
+       FROM loan_repayments r
+       JOIN loans l ON r.loan_id = l.id
+       WHERE r.repayment_date >= $1 AND r.repayment_date <= $2
+     `, [startDate, endDate]);
+     const repayments = repaysResult.rows;
+
+     res.json({
+       data: {
+         members,
+         loans,
+         dailySheets,
+         repayments
+       }
+     });
+   } catch (error: any) {
+     res.status(500).json({ error: { message: error.message } });
+   }
+}
+
+/**
+ * POST /api/v1/daily-sheets/record-payment
+ * Records savings and/or loan repayment sequentially for atomicity simulation.
+ * MOCKED FOR TESTING: Returns success immediately without database insert.
+ */
+export async function recordPaymentController(req: Request, res: Response): Promise<void> {
+   const { memberId, businessDate, savingsAmountPaise, loanAmountPaise, loanId } = req.body;
+   const adminId = req.user?.id ?? req.auth?.id;
+   
+   if (!adminId) {
+     res.status(401).json({ error: { message: 'Auth required' } });
+     return;
+   }
+
+   try {
+     const pool = getDbPool();
+     await pool.query('BEGIN');
+     
+     let dailySheet = null;
+     if (savingsAmountPaise > 0) {
+        // Fetch member details to satisfy database constraints
+        const memRes = await pool.query(`SELECT number_of_sheets FROM members WHERE id = $1`, [memberId]);
+        const numSheets = memRes.rows[0]?.number_of_sheets || 1;
+
+        const res1 = await pool.query(`
+          INSERT INTO daily_sheets (
+            member_id, business_date, actual_paid_paise, status, recorded_by_admin_id,
+            number_of_sheets, daily_due_amount_paise, previous_arrears_paise, total_due_paise
+          )
+          VALUES ($1, $2, $3, 'PAID', $4, $5, $3, 0, $3) RETURNING id
+        `, [memberId, businessDate, savingsAmountPaise, adminId, numSheets]);
+        dailySheet = { id: res1.rows[0].id, memberId, actualPaidPaise: savingsAmountPaise };
+     }
+
+     let repayment = null;
+     if (loanAmountPaise > 0 && loanId) {
+        const res2 = await pool.query(`
+          INSERT INTO loan_repayments (loan_id, repayment_date, amount_paise, recorded_by_admin_id, payment_mode)
+          VALUES ($1, $2, $3, $4, 'CASH') RETURNING id
+        `, [loanId, businessDate, loanAmountPaise, adminId]);
+        repayment = { id: res2.rows[0].id, loanId, amountPaise: loanAmountPaise };
+     }
+
+     await pool.query('COMMIT');
+     res.json({ data: { success: true, dailySheet, repayment } });
+   } catch (e: any) {
+     const pool = getDbPool();
+     await pool.query('ROLLBACK');
+     res.status(400).json({ error: { message: e.message } });
+   }
 }
