@@ -643,15 +643,24 @@ export default function DailySheetsPage() {
              const missingSAmount = arrearsData.savings.missedAmountPaise / 100;
              const missingLAmount = arrearsData.loan.missedAmountPaise / 100;
              
+             const remainingSCount = Math.max(0, missingSCount - customSCount);
+             const remainingLCount = Math.max(0, missingLCount - customLCount);
+             const remainingSAmount = Math.max(0, missingSAmount - (customSCount * (customPayModal?.daily / 100)));
+             const remainingLAmount = Math.max(0, missingLAmount - (customLCount * (customPayModal?.loan / 100)));
+             
              if (missingSCount > 0 || missingLCount > 0) {
                return (
                  <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', color: '#991b1b', fontSize: '0.875rem' }}>
                    <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1rem' }}>Balance Alert</div>
                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      {missingSCount > 0 && <div>• <strong>Savings Balance:</strong> ₹{missingSAmount} (Unpaid for {missingSCount} days)</div>}
-                      {missingLCount > 0 && <div>• <strong>Loan Balance:</strong> ₹{missingLAmount} (Unpaid for {missingLCount} days)</div>}
+                      {missingSCount > 0 && (
+                        <div>• <strong>Savings Balance:</strong> ₹{remainingSAmount} (Unpaid for {remainingSCount} days)</div>
+                      )}
+                      {missingLCount > 0 && (
+                        <div>• <strong>Loan Balance:</strong> ₹{remainingLAmount} (Unpaid for {remainingLCount} days)</div>
+                      )}
                    </div>
-                   <div style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.75rem' }}>Adding amounts will automatically clear these old dues first before advancing to current/future dates.</div>
+                   <div style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.75rem' }}>Adding amounts automatically clears these old dues first before advancing to future dates.</div>
                  </div>
                );
              }
