@@ -122,7 +122,7 @@ export async function getDailySheetsGridDataController(req: Request, res: Respon
      
      // Get all active members
      const membersResult = await pool.query(`
-       SELECT id, member_number, member_name, mobile_number, shop_name, number_of_sheets 
+       SELECT id, member_number, member_name, mobile_number, shop_name, number_of_sheets, TO_CHAR(COALESCE(join_date, created_at), 'YYYY-MM-DD') as join_date
        FROM members WHERE status = 'ACTIVE' ORDER BY member_number ASC
      `);
      const members = membersResult.rows;
@@ -136,15 +136,15 @@ export async function getDailySheetsGridDataController(req: Request, res: Respon
 
      // Get daily sheets within date range
      const sheetsResult = await pool.query(`
-       SELECT member_id, TO_CHAR(business_date, 'YYYY-MM-DD') as business_date, actual_paid_paise 
+       SELECT member_id, TO_CHAR(business_date, 'YYYY-MM-DD') as business_date, actual_paid_paise, TO_CHAR(COALESCE(payment_time, created_at), 'YYYY-MM-DD') as payment_date 
        FROM daily_sheets 
-       WHERE business_date >= $1 AND business_date <= $2 AND status = 'COMPLETED'
+       WHERE business_date >= $1 AND business_date <= $2 AND status IN ('PAID', 'PARTIAL', 'ADVANCE_PAID')
      `, [startDate, endDate]);
      const dailySheets = sheetsResult.rows;
 
      // Get loan repayments within date range
      const repaysResult = await pool.query(`
-       SELECT l.member_id, TO_CHAR(r.repayment_date, 'YYYY-MM-DD') as business_date, r.amount_paise 
+       SELECT l.member_id, TO_CHAR(r.repayment_date, 'YYYY-MM-DD') as business_date, r.amount_paise, TO_CHAR(r.created_at, 'YYYY-MM-DD') as payment_date 
        FROM loan_repayments r
        JOIN loans l ON r.loan_id = l.id
        WHERE r.repayment_date >= $1 AND r.repayment_date <= $2

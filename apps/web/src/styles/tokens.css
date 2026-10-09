@@ -16,7 +16,7 @@
 
   /* Primary Brand (Premium Gold) */
   --color-primary-50: #fdfaf0;
-  --color-primary-100: #FBF8F1; /* Soft Ivory */
+  --color-primary-100: #F5E6D3; /* Sandalwood / Beige */
   --color-primary-200: #F6F0E4; /* Warm Cream */
   --color-primary-300: #E5C878; /* Light Gold */
   --color-primary-400: #D4AF5A; /* Rich Gold */
@@ -52,10 +52,10 @@
   --color-espresso-300: #b5ad9e;
   --color-espresso-200: #DDD4C3; /* Border */
   --color-espresso-100: #ebe6dc;
-  --color-espresso-50: #FBF8F1; /* Soft Ivory */
+  --color-espresso-50: #F5E6D3; /* Sandalwood / Beige */
 
   /* Surfaces & Backgrounds */
-  --color-bg-app: #FBF8F1; /* Soft Ivory app background */
+  --color-bg-app: #FCF8F2; /* Subtle light sandal background */
   --color-bg-surface: #FFFFFF; /* Warm White Card / Surface background */
   --color-bg-surface-subtle: #F6F0E4; /* Secondary card background / Warm Cream */
   --color-bg-surface-elevated: #FFFFFF; /* Popovers, modals, dropdowns */

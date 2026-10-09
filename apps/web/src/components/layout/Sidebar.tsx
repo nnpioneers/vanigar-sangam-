@@ -121,7 +121,7 @@ export function Sidebar({
           {!collapsed && (
             <div className={styles.brandText}>
               <span className={styles.brandName}>{t('common.appName')}</span>
-              <span className={styles.brandSub}>Lappaikudikadu</span>
+              <span className={styles.brandSub}>Labbaikudikadu</span>
             </div>
           )}
         </Link>

@@ -75,7 +75,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Daily Collection Banner */}
-        <div style={{ backgroundColor: '#115e59', borderRadius: '0.5rem', padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+        <div style={{ background: 'linear-gradient(135deg, var(--color-gold-400) 0%, var(--color-primary-500) 100%)', borderRadius: '0.5rem', padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
           {/* Left: Title & Subtitle */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
             </div>
             <button 
               onClick={() => handleActionClick('/daily-sheets/new')}
-              style={{ backgroundColor: '#ffffff', color: '#115e59', border: 'none', padding: '0.45rem 0.85rem', borderRadius: '0.35rem', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+              style={{ backgroundColor: '#ffffff', color: 'var(--color-primary-700)', border: 'none', padding: '0.45rem 0.85rem', borderRadius: '0.35rem', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
             >
               {t('dashboard.openDailySheetBtn')} &rarr;
             </button>
@@ -185,15 +185,15 @@ export default function DashboardPage() {
           </div>
 
           {/* Card 6 - Sangam Net Balance */}
-          <div style={{ backgroundColor: '#115e59', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'linear-gradient(135deg, var(--color-gold-400) 0%, var(--color-primary-500) 100%)', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <div style={{ fontSize: '0.65rem', color: '#ccfbf1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>{t('dashboard.cardSangamNetBalance')}</div>
-              <div style={{ backgroundColor: '#0f766e', color: '#ccfbf1', width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>₹</div>
+              <div style={{ fontSize: '0.65rem', color: '#fef3c7', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>{t('dashboard.cardSangamNetBalance')}</div>
+              <div style={{ backgroundColor: 'var(--color-primary-600)', color: '#ffffff', width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>₹</div>
             </div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.75rem' }}>{formatRupees(cashMetrics.totalCashInHandPaise || 0)}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: 'auto', flexWrap: 'wrap' }}>
-              <span style={{ backgroundColor: '#0f766e', color: '#ccfbf1', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 600 }}>{t('dashboard.cashStr')}</span>
-              <span style={{ fontSize: '0.65rem', color: '#99f6e4', lineHeight: 1.1 }}>{t('dashboard.liquidReserves')}</span>
+              <span style={{ backgroundColor: 'var(--color-primary-600)', color: '#ffffff', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 600 }}>{t('dashboard.cashStr')}</span>
+              <span style={{ fontSize: '0.65rem', color: '#fef3c7', lineHeight: 1.1 }}>{t('dashboard.liquidReserves')}</span>
             </div>
           </div>
         </div>
@@ -286,13 +286,13 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '0.5rem' }}>
                 <div 
                   onClick={() => setActiveTab('seettu')}
-                  style={{ padding: '0.75rem 1.5rem', color: activeTab === 'seettu' ? '#115e59' : '#64748b', fontWeight: activeTab === 'seettu' ? 700 : 600, fontSize: '0.875rem', borderBottom: activeTab === 'seettu' ? '2px solid #115e59' : 'none', cursor: 'pointer', textAlign: 'center', flex: 1 }}
+                  style={{ padding: '0.75rem 1.5rem', color: activeTab === 'seettu' ? 'var(--color-primary-700)' : '#64748b', fontWeight: activeTab === 'seettu' ? 700 : 600, fontSize: '0.875rem', borderBottom: activeTab === 'seettu' ? '2px solid var(--color-primary-700)' : 'none', cursor: 'pointer', textAlign: 'center', flex: 1 }}
                 >
                   {t('dashboard.tabPendingSeettu')} ({collectionMetrics.pendingCollectionsCount || 0})
                 </div>
                 <div 
                   onClick={() => setActiveTab('loans')}
-                  style={{ padding: '0.75rem 1.5rem', color: activeTab === 'loans' ? '#115e59' : '#64748b', fontWeight: activeTab === 'loans' ? 700 : 600, fontSize: '0.875rem', borderBottom: activeTab === 'loans' ? '2px solid #115e59' : 'none', cursor: 'pointer', textAlign: 'center', flex: 1 }}
+                  style={{ padding: '0.75rem 1.5rem', color: activeTab === 'loans' ? 'var(--color-primary-700)' : '#64748b', fontWeight: activeTab === 'loans' ? 700 : 600, fontSize: '0.875rem', borderBottom: activeTab === 'loans' ? '2px solid var(--color-primary-700)' : 'none', cursor: 'pointer', textAlign: 'center', flex: 1 }}
                 >
                   {t('dashboard.tabActiveLoans')} ({loanMetrics.activeLoans || 0})
                 </div>

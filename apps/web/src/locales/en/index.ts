@@ -1,6 +1,6 @@
 export const common = {
   appName: 'Vanigar Sangam',
-  appSubtitle: 'Lappaikudikadu — Together We Grow',
+  appSubtitle: 'Labbaikudikadu — Together We Grow',
   search: 'Search...',
   filter: 'Filter',
   all: 'All',

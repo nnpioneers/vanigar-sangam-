@@ -29,11 +29,17 @@ export default function DailySheetsPage() {
   const [pastPayModal, setPastPayModal] = useState<{row: any, dateStr: string, d: Date, type: 's' | 'l'} | null>(null);
   const [customSCount, setCustomSCount] = useState(0);
   const [customLCount, setCustomLCount] = useState(0);
+  const [detailsModal, setDetailsModal] = useState<{title: string, data: any[], type: 's' | 'l' | 'both'} | null>(null);
+  const [quickProfileId, setQuickProfileId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30;
+  const [whatsappModal, setWhatsappModal] = useState<boolean>(false);
   const [membersList, setMembersList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [waSendingStatus, setWaSendingStatus] = useState<Record<string, string>>({});
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     const dom = d.getDate();
@@ -54,9 +60,8 @@ export default function DailySheetsPage() {
     const fetchGridData = async () => {
       setLoadingMembers(true);
       try {
-        const s = new Date(days[0]);
-        s.setDate(s.getDate() - 30);
-        const sDate = s.toISOString().slice(0, 10);
+        const currentYear = new Date().getFullYear();
+        const sDate = `${currentYear}-01-01`;
         const eDate = getLocalISODate(days[6]);
         const res = await apiRequest<{ data: any }>(`/daily-sheets/grid?startDate=${sDate}&endDate=${eDate}`);
         
@@ -77,6 +82,7 @@ export default function DailySheetsPage() {
              name: m.member_name,
              phone: m.mobile_number || 'N/A',
              shop: m.shop_name,
+             joinDate: `${new Date().getFullYear()}-01-01`,
              category: 'General',
              daily: dailyAmt,
              hasLoan,
@@ -95,7 +101,7 @@ export default function DailySheetsPage() {
              if (!newPayments[member.id][date]) newPayments[member.id][date] = { s: false, l: false };
              if (ds.actual_paid_paise > 0) {
                newPayments[member.id][date].s = true;
-               newPayments[member.id][date].sDate = date;
+               newPayments[member.id][date].sDate = ds.payment_date || date;
              }
            }
         });
@@ -106,7 +112,7 @@ export default function DailySheetsPage() {
              if (!newPayments[member.id][date]) newPayments[member.id][date] = { s: false, l: false };
              if (rp.amount_paise > 0) {
                newPayments[member.id][date].l = true;
-               newPayments[member.id][date].lDate = date;
+               newPayments[member.id][date].lDate = rp.payment_date || date;
              }
            }
         });
@@ -129,6 +135,11 @@ export default function DailySheetsPage() {
     }
   }, [customPayModal]);
   
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, currentDate]);
+
+  
   if (authLoading || dashboardLoading) return <LoadingState label="Loading..." fullscreen />;
   if (!user || !summary) return null;
 
@@ -136,28 +147,101 @@ export default function DailySheetsPage() {
 
   // Override metrics for testing
   const activeMembersCount = membersList.length;
-  let expectedTodayAmountPaise = 0;
-  let todayCollectionAmountPaise = 0;
-  let todayCollectionCount = 0;
+  
+  let savingsExpectedTodayPaise = 0;
+  let savingsCollectedTodayPaise = 0;
+  let savingsCollectedCount = 0;
+  let savingsPendingCount = 0;
+  
+  let loansExpectedTodayPaise = 0;
+  let loansCollectedTodayPaise = 0;
+  let loansCollectedCount = 0;
+  let activeLoansCount = 0;
+  
+  const savingsDetails: any[] = [];
+  const loansDetails: any[] = [];
+
+  const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const actualTodayObj = new Date();
+  const calculationEnd = actualTodayObj < monthEnd ? actualTodayObj : monthEnd;
+  const monthDaysStr: string[] = [];
+  for (let d = new Date(monthStart); d <= calculationEnd; d.setDate(d.getDate() + 1)) {
+     monthDaysStr.push(getLocalISODate(d));
+  }
+
+  let savingsExpectedMonthPaise = 0;
+  let savingsCollectedMonthPaise = 0;
+  let savingsPendingMonthCount = 0;
+
+  let loansExpectedMonthPaise = 0;
+  let loansCollectedMonthPaise = 0;
+  let loansPendingMonthCount = 0;
 
   membersList.forEach(m => {
-     expectedTodayAmountPaise += m.daily;
-     if (m.hasLoan) expectedTodayAmountPaise += m.loan;
+     // Savings
+     savingsExpectedTodayPaise += m.daily;
      
-     const p = payments[m.id]?.[actualTodayStr];
-     if (p?.s || p?.l) {
-        if (p.s) todayCollectionAmountPaise += m.daily;
-        if (p.l) todayCollectionAmountPaise += m.loan;
-        todayCollectionCount++;
+     // Loans
+     if (m.hasLoan) {
+        loansExpectedTodayPaise += m.loan;
+        activeLoansCount++;
      }
+     
+     const selectedDateStr = getLocalISODate(selectedDate);
+     const p = payments[m.id]?.[selectedDateStr];
+     
+     let sPaid = false;
+     let lPaid = false;
+
+     if (p?.s) {
+        savingsCollectedTodayPaise += m.daily;
+        savingsCollectedCount++;
+        sPaid = true;
+     } else {
+        savingsPendingCount++;
+     }
+     
+     if (p?.l && m.hasLoan) {
+        loansCollectedTodayPaise += m.loan;
+        loansCollectedCount++;
+        lPaid = true;
+     }
+     
+     savingsDetails.push({ member: m, amount: m.daily, paid: sPaid });
+     if (m.hasLoan) {
+        loansDetails.push({ member: m, amount: m.loan, paid: lPaid });
+     }
+
+     monthDaysStr.forEach(dStr => {
+        if (dStr < m.joinDate) return;
+        
+        savingsExpectedMonthPaise += m.daily;
+        if (m.hasLoan) loansExpectedMonthPaise += m.loan;
+        
+        const mp = payments[m.id]?.[dStr];
+        if (mp?.s) {
+           savingsCollectedMonthPaise += m.daily;
+        } else {
+           savingsPendingMonthCount++;
+        }
+        
+        if (m.hasLoan) {
+           if (mp?.l) {
+              loansCollectedMonthPaise += m.loan;
+           } else {
+              loansPendingMonthCount++;
+           }
+        }
+     });
   });
 
   const coreMetrics = { activeMembers: activeMembersCount };
   const collectionMetrics = {
-     expectedTodayAmountPaise,
-     todayCollectionAmountPaise,
-     todayCollectionCount,
-     pendingCollectionsCount: activeMembersCount - todayCollectionCount
+     expectedTodayAmountPaise: savingsExpectedTodayPaise + loansExpectedTodayPaise,
+     todayCollectionAmountPaise: savingsCollectedTodayPaise + loansCollectedTodayPaise,
+     todayCollectionCount: savingsCollectedCount, // roughly
+     pendingCollectionsCount: activeMembersCount - savingsCollectedCount
   };
 
   const nextWeek = () => {
@@ -273,9 +357,16 @@ export default function DailySheetsPage() {
 
   const tableData = membersList.filter(m => {
     const matchesSearch = !searchTerm || m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.shop.toLowerCase().includes(searchTerm.toLowerCase()) || m.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = categoryFilter === 'All Categories' || m.category === categoryFilter;
-    return matchesSearch && matchesCat;
+    if (categoryFilter === 'All Categories') return matchesSearch;
+    if (categoryFilter === 'Savings Dues Only') return matchesSearch; // Everyone has savings
+    if (categoryFilter === 'Loan Dues Only') return matchesSearch && m.hasLoan;
+    return matchesSearch && m.category === categoryFilter;
   });
+  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const paginatedData = tableData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  
+  const shopCategories = Array.from(new Set(membersList.map(m => m.category || 'General')));
 
   const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const customTotal = ((customSCount ? customSCount * customPayModal?.daily : 0) + (customLCount ? customLCount * customPayModal?.loan : 0)) / 100;
@@ -306,8 +397,15 @@ export default function DailySheetsPage() {
                 return <option key={i} value={i}>{d.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</option>;
               })}
             </select>
-            <select style={{ padding: '0.5rem 2rem 0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#fff' }}>
-              <option>All Categories</option>
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} style={{ padding: '0.5rem 2rem 0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#fff' }}>
+              <option value="All Categories">All Categories</option>
+              <option value="Savings Dues Only">Savings Dues Only</option>
+              <option value="Loan Dues Only">Loan Dues Only</option>
+              <optgroup label="Shop Category">
+                {shopCategories.map(cat => (
+                  <option key={cat} value={cat as string}>{cat as string}</option>
+                ))}
+              </optgroup>
             </select>
             <div style={{ color: 'var(--color-espresso-500)', fontSize: '0.875rem' }}>Showing {tableData.length} members</div>
           </div>
@@ -325,35 +423,102 @@ export default function DailySheetsPage() {
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-espresso-900)', marginBottom: '0.75rem' }}>{coreMetrics.activeMembers}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-espresso-400)', marginTop: '0.5rem' }}>0 in advance coverage</div>
           </div>
-          <div style={{ background: '#f0fdf4', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #bbf7d0' }}>
+          <div 
+            style={{ background: '#f0fdf4', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #bbf7d0', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+            onClick={() => setDetailsModal({ title: 'Savings Details', data: savingsDetails, type: 's' })}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <div style={{ background: '#dcfce7', color: '#16a34a', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a', letterSpacing: '0.05em' }}>EXPECTED DUES</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a', letterSpacing: '0.05em', textTransform: 'uppercase' }}>SAVINGS {selectedDate.getDate()} {selectedDate.toLocaleString('en-US', { month: 'short' })} ({selectedDate.toLocaleString('en-US', { weekday: 'short' })})</div>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', marginBottom: '0.75rem' }}>{formatRupees(collectionMetrics.expectedTodayAmountPaise)}</div>
-            <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.5rem' }}>{coreMetrics.activeMembers} members due today</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', marginBottom: '0.5rem' }}>{formatRupees(savingsExpectedTodayPaise)}</div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '0.75rem', borderTop: '1px dashed #bbf7d0', paddingTop: '0.5rem' }}>
+              <div style={{ color: '#15803d' }}>
+                <div style={{ fontWeight: 700 }}>Collected</div>
+                <div>{formatRupees(savingsCollectedTodayPaise)} ({savingsCollectedCount})</div>
+              </div>
+              <div style={{ color: '#b91c1c', textAlign: 'right' }}>
+                <div style={{ fontWeight: 700 }}>Pending</div>
+                <div>{formatRupees(savingsExpectedTodayPaise - savingsCollectedTodayPaise)} ({savingsPendingCount})</div>
+              </div>
+            </div>
           </div>
-          <div style={{ background: '#f5f3ff', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #ddd6fe' }}>
+
+          <div 
+            style={{ background: '#f0fdf4', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #bbf7d0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <div style={{ background: '#ede9fe', color: '#7c3aed', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+              <div style={{ background: '#dcfce7', color: '#16a34a', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c3aed', letterSpacing: '0.05em' }}>COLLECTED TODAY</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a', letterSpacing: '0.05em', textTransform: 'uppercase' }}>SAVINGS {monthName}</div>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#4c1d95', marginBottom: '0.75rem' }}>{formatRupees(collectionMetrics.todayCollectionAmountPaise)}</div>
-            <div style={{ fontSize: '0.75rem', color: '#7c3aed', marginTop: '0.5rem' }}>{collectionMetrics.todayCollectionCount} Paid • {collectionMetrics.pendingCollectionsCount} Pending</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', marginBottom: '0.5rem' }}>{formatRupees(savingsExpectedMonthPaise)}</div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '0.75rem', borderTop: '1px dashed #bbf7d0', paddingTop: '0.5rem' }}>
+              <div style={{ color: '#15803d' }}>
+                <div style={{ fontWeight: 700 }}>Collected</div>
+                <div>{formatRupees(savingsCollectedMonthPaise)}</div>
+              </div>
+              <div style={{ color: '#b91c1c', textAlign: 'right' }}>
+                <div style={{ fontWeight: 700 }}>Pending</div>
+                <div>{formatRupees(savingsExpectedMonthPaise - savingsCollectedMonthPaise)} ({savingsPendingMonthCount})</div>
+              </div>
+            </div>
           </div>
-          <div style={{ background: '#fffbeb', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #fde68a' }}>
+
+          <div 
+            style={{ background: '#fef2f2', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #fecaca', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+            onClick={() => setDetailsModal({ title: 'Loan Details', data: loansDetails, type: 'l' })}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <div style={{ background: '#fef3c7', color: '#d97706', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div style={{ background: '#fee2e2', color: '#dc2626', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', letterSpacing: '0.05em' }}>PENDING TODAY</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#dc2626', letterSpacing: '0.05em', textTransform: 'uppercase' }}>LOANS {selectedDate.getDate()} {selectedDate.toLocaleString('en-US', { month: 'short' })} ({selectedDate.toLocaleString('en-US', { weekday: 'short' })})</div>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#92400e', marginBottom: '0.75rem' }}>{formatRupees(collectionMetrics.expectedTodayAmountPaise - collectionMetrics.todayCollectionAmountPaise)}</div>
-            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '0.5rem' }}>{collectionMetrics.pendingCollectionsCount} Not Paid • 0 Overdue</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#7f1d1d', marginBottom: '0.5rem' }}>{formatRupees(loansExpectedTodayPaise)}</div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '0.75rem', borderTop: '1px dashed #fecaca', paddingTop: '0.5rem' }}>
+              <div style={{ color: '#15803d' }}>
+                <div style={{ fontWeight: 700 }}>Collected</div>
+                <div>{formatRupees(loansCollectedTodayPaise)} ({loansCollectedCount})</div>
+              </div>
+              <div style={{ color: '#b91c1c', textAlign: 'right' }}>
+                <div style={{ fontWeight: 700 }}>Pending</div>
+                <div>{formatRupees(loansExpectedTodayPaise - loansCollectedTodayPaise)} ({activeLoansCount - loansCollectedCount})</div>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            style={{ background: '#fef2f2', borderRadius: '0.5rem', padding: '1rem', border: '1px solid #fecaca', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ background: '#fee2e2', color: '#dc2626', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#dc2626', letterSpacing: '0.05em', textTransform: 'uppercase' }}>LOANS {monthName}</div>
+            </div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#7f1d1d', marginBottom: '0.5rem' }}>{formatRupees(loansExpectedMonthPaise)}</div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '0.75rem', borderTop: '1px dashed #fecaca', paddingTop: '0.5rem' }}>
+              <div style={{ color: '#15803d' }}>
+                <div style={{ fontWeight: 700 }}>Collected</div>
+                <div>{formatRupees(loansCollectedMonthPaise)}</div>
+              </div>
+              <div style={{ color: '#b91c1c', textAlign: 'right' }}>
+                <div style={{ fontWeight: 700 }}>Pending</div>
+                <div>{formatRupees(loansExpectedMonthPaise - loansCollectedMonthPaise)} ({loansPendingMonthCount})</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -434,14 +599,14 @@ export default function DailySheetsPage() {
               </tr>
             </thead>
             <tbody>
-              {tableData.length === 0 ? (
+              {paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={13} style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
                     <div style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-espresso-900)' }}>No Data Available</div>
                   </td>
                 </tr>
               ) : (
-                tableData.map((row, i) => {
+                paginatedData.map((row, i) => {
                   const todayDateStr = getLocalISODate(new Date());
                   const selectedDateStr = getLocalISODate(selectedDate);
                   const rowPayments = payments[row.id]?.[selectedDateStr] || { s: false, l: false };
@@ -449,13 +614,13 @@ export default function DailySheetsPage() {
 
                   return (
                   <tr key={row.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 500, borderRight: '1px solid #e2e8f0' }}>{i + 1}</td>
+                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 500, borderRight: '1px solid #e2e8f0' }}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
                     <td style={{ padding: '0.75rem 0.5rem', fontWeight: 700, borderRight: '1px solid #e2e8f0' }}>
-  <Link href={`/members/${row.memberId}`} style={{ color: '#16a34a', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.id}</Link>
+  <a href="#" onClick={(e) => { e.preventDefault(); setQuickProfileId(row.memberId); }} style={{ color: '#16a34a', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.id}</a>
 </td>
                     <td style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #e2e8f0' }}>
                       <div style={{ fontWeight: 600 }}>
-  <Link href={`/members/${row.memberId}`} style={{ color: 'var(--color-espresso-900)', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.name}</Link>
+  <a href="#" onClick={(e) => { e.preventDefault(); setQuickProfileId(row.memberId); }} style={{ color: 'var(--color-espresso-900)', textDecoration: 'none' }} onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>{row.name}</a>
 </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#8b5cf6', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                         <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
@@ -562,7 +727,7 @@ export default function DailySheetsPage() {
                            </button>
                         ) : (
                            <button style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '0.375rem 0.75rem', borderRadius: '0.25rem', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }} onClick={() => handlePay(row.id, selectedDateStr, true, row.hasLoan)}>
-                             Pay (₹{(row.daily + row.loan) / 100})
+                             Pay (₹{((rowPayments.s ? 0 : row.daily) + (row.hasLoan && !rowPayments.l ? row.loan : 0)) / 100})
                            </button>
                         )}
                         <button style={{ background: '#fff', color: 'var(--color-espresso-600)', border: '1px solid var(--color-espresso-200)', padding: '0.375rem 0.75rem', borderRadius: '0.25rem', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }} onClick={() => setCustomPayModal(row)}>
@@ -578,6 +743,20 @@ export default function DailySheetsPage() {
           </table>
         </div>
         
+        
+        {/* Pagination & WhatsApp Controls */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', padding: '1rem', background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: currentPage === 1 ? '#f8fafc' : '#fff', color: currentPage === 1 ? '#94a3b8' : '#1e293b', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 600 }}>Page {currentPage} of {totalPages || 1}</span>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: (currentPage === totalPages || totalPages === 0) ? '#f8fafc' : '#fff', color: (currentPage === totalPages || totalPages === 0) ? '#94a3b8' : '#1e293b', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer' }}>Next</button>
+          </div>
+          <button onClick={() => setWhatsappModal(true)} style={{ background: '#25D366', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.22.584 4.397 1.696 6.305L.135 24l5.807-1.523c1.839 1.018 3.902 1.554 6.089 1.554 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm0 21.996c-1.892 0-3.743-.509-5.362-1.469l-.385-.228-3.987 1.045 1.066-3.887-.25-.398A9.972 9.972 0 012.035 12.03c0-5.523 4.492-10.015 10.015-10.015 5.523 0 10.015 4.492 10.015 10.015 0 5.523-4.492 10.015-10.015 10.015zM17.5 14.5c-.302-.151-1.787-.881-2.064-.981-.277-.101-.479-.151-.68.151-.202.302-.781.981-.958 1.183-.176.201-.353.226-.655.075-2.039-1.025-3.52-2.195-4.872-4.482-.176-.302.174-.298.536-.889.076-.126.038-.252 0-.378-.176-.403-.68-1.636-.932-2.24-.245-.589-.494-.509-.68-.518l-.58-.009c-.201 0-.529.075-.806.378-.277.302-1.058 1.033-1.058 2.518 0 1.485 1.083 2.92 1.234 3.121.151.202 2.128 3.25 5.154 4.553 1.942.836 2.721.921 3.73.774 1.154-.168 2.668-1.09 3.045-2.146.378-1.056.378-1.961.265-2.146-.113-.186-.416-.287-.718-.438z"/></svg>
+            Send WhatsApp Reminders
+          </button>
+        </div>
+
         {/* Footer legend */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem', border: '1px solid #e2e8f0', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-espresso-600)', flexWrap: 'wrap', gap: '1rem' }}>
            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
@@ -613,9 +792,17 @@ export default function DailySheetsPage() {
           let sRemaining = customSCount;
           let lRemaining = customLCount;
           
-          const orderedDates = [...days.map(d => getLocalISODate(d))];
-          if (!orderedDates.includes(actualTodayStr)) orderedDates.push(actualTodayStr);
-          orderedDates.sort();
+          const joinDateObj = new Date(customPayModal.joinDate || actualTodayStr);
+          const todayObj = new Date(actualTodayStr);
+          const timeDiff = todayObj.getTime() - joinDateObj.getTime();
+          const daysDiff = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
+          
+          const orderedDates: string[] = [];
+          for (let i = 0; i <= daysDiff; i++) {
+             const d = new Date(joinDateObj);
+             d.setDate(d.getDate() + i);
+             orderedDates.push(getLocalISODate(d));
+          }
           
           let advanceDateS = new Date(actualTodayStr);
           let advanceDateL = new Date(actualTodayStr);
@@ -683,9 +870,14 @@ export default function DailySheetsPage() {
            let lTodayMissing = false;
            
            if (customPayModal) {
-               const arrearsDays = Array.from({length: 30}, (_, i) => {
-                  const d = new Date(actualTodayStr);
-                  d.setDate(d.getDate() - 30 + i);
+               const joinDateObj = new Date(customPayModal.joinDate || actualTodayStr);
+               const todayObj = new Date(actualTodayStr);
+               const timeDiff = todayObj.getTime() - joinDateObj.getTime();
+               const daysDiff = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
+               
+               const arrearsDays = Array.from({length: daysDiff}, (_, i) => {
+                  const d = new Date(joinDateObj);
+                  d.setDate(d.getDate() + i);
                   return d;
                });
                for (const d of arrearsDays) {
@@ -818,6 +1010,142 @@ export default function DailySheetsPage() {
            This will be recorded with today's date and displayed as a <strong style={{ color: '#ef4444' }}>Red Tick</strong>.
         </div>
       </ConfirmDialog>
+
+      {/* Modals for Clickable Dashboard Cards */}
+      {detailsModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setDetailsModal(null)}>
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '2rem', width: '100%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--color-espresso-900)' }}>{detailsModal.title}</h2>
+              <button onClick={() => setDetailsModal(null)} style={{ background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#64748b' }}>&times;</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {detailsModal.data.map((d: any, idx: number) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', background: d.paid ? '#f0fdf4' : '#fff' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--color-espresso-900)' }}>{d.member.name} ({d.member.id})</span>
+                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{d.member.shop}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontWeight: 700, color: d.paid ? '#16a34a' : '#0f172a' }}>{formatRupees(d.amount)}</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: d.paid ? '#16a34a' : '#ef4444' }}>{d.paid ? 'Paid' : 'Pending'}</span>
+                  </div>
+                </div>
+              ))}
+              {detailsModal.data.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>No data available</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Profile Modal */}
+      {quickProfileId && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setQuickProfileId(null)}>
+          <div style={{ background: '#f8fafc', borderRadius: '12px', width: '100%', maxWidth: '1000px', height: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#16a34a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                  P
+                </div>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-espresso-900)' }}>Member Profile</h2>
+              </div>
+              <button onClick={() => setQuickProfileId(null)} style={{ background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>&times;</button>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+              <iframe src={`/members/${quickProfileId}`} style={{ width: '100%', height: '100%', border: 'none', background: '#f8fafc' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* WhatsApp Modal */}
+      {whatsappModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setWhatsappModal(false)}>
+          <div style={{ background: '#fff', borderRadius: '12px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f0fdf4', position: 'sticky', top: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <svg width="24" height="24" fill="#16a34a" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.22.584 4.397 1.696 6.305L.135 24l5.807-1.523c1.839 1.018 3.902 1.554 6.089 1.554 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm0 21.996c-1.892 0-3.743-.509-5.362-1.469l-.385-.228-3.987 1.045 1.066-3.887-.25-.398A9.972 9.972 0 012.035 12.03c0-5.523 4.492-10.015 10.015-10.015 5.523 0 10.015 4.492 10.015 10.015 0 5.523-4.492 10.015-10.015 10.015z"/></svg>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#16a34a' }}>WhatsApp Automation (Page {currentPage})</h2>
+              </div>
+              <button onClick={() => setWhatsappModal(false)} style={{ background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Showing {paginatedData.length} members on this page</span>
+                <button 
+                  onClick={async () => {
+                    for (const row of paginatedData) {
+                       setWaSendingStatus(prev => ({...prev, [row.id]: 'sending'}));
+                       await new Promise(resolve => setTimeout(resolve, 600));
+                       setWaSendingStatus(prev => ({...prev, [row.id]: 'sent'}));
+                    }
+                    notification.success(`Successfully sent WhatsApp messages to ${paginatedData.length} members!`);
+                  }} 
+                  style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                >
+                  Simulate Send All
+                </button>
+              </div>
+              
+              {paginatedData.map((row: any, i: number) => {
+                const todayStr = getLocalISODate(new Date());
+                const p = payments[row.id]?.[todayStr] || { s: false, l: false };
+                let msg = "";
+                
+                if (p.s || p.l) {
+                   msg = `Hello ${row.name}, we have received your payment today (${todayStr}). `;
+                   if (p.s) msg += `Savings: ${formatRupees(row.daily)}. `;
+                   if (p.l) msg += `Loan: ${formatRupees(row.loan)}. `;
+                   msg += `Total: ${formatRupees((p.s ? row.daily : 0) + (p.l ? row.loan : 0))}. Thank you!`;
+                } else {
+                   msg = `Reminder: Hello ${row.name}, your due of ${formatRupees(row.daily + (row.hasLoan ? row.loan : 0))} for today (${todayStr}) is pending. Please pay at the earliest.`;
+                }
+                
+                const encodedMsg = encodeURIComponent(msg);
+                const waUrl = `https://wa.me/91${row.phone.replace(/\D/g, '')}?text=${encodedMsg}`;
+
+                return (
+                  <div key={i} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: (p.s || p.l) ? '#f0fdf4' : '#fff5f5' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{row.name} ({row.id})</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', background: (p.s || p.l) ? '#dcfce7' : '#fee2e2', color: (p.s || p.l) ? '#16a34a' : '#ef4444' }}>
+                        {(p.s || p.l) ? 'PAID' : 'PENDING'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Phone: {row.phone}</div>
+                    <div style={{ padding: '0.75rem', background: '#fff', border: '1px dashed #cbd5e1', borderRadius: '0.5rem', fontSize: '0.9rem', color: '#475569', marginTop: '0.25rem' }}>
+                      {msg}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                      <a href={waUrl} target="_blank" rel="noopener noreferrer" style={{ background: waSendingStatus[row.id] === 'sent' ? '#0ea5e9' : '#25D366', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.5rem', opacity: waSendingStatus[row.id] === 'sending' ? 0.7 : 1, pointerEvents: waSendingStatus[row.id] === 'sending' ? 'none' : 'auto' }}>
+                        {waSendingStatus[row.id] === 'sending' ? (
+                           <span>Sending...</span>
+                        ) : waSendingStatus[row.id] === 'sent' ? (
+                           <>
+                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                             Sent ✓
+                           </>
+                        ) : (
+                           <>
+                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.22.584 4.397 1.696 6.305L.135 24l5.807-1.523c1.839 1.018 3.902 1.554 6.089 1.554 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm0 21.996c-1.892 0-3.743-.509-5.362-1.469l-.385-.228-3.987 1.045 1.066-3.887-.25-.398A9.972 9.972 0 012.035 12.03c0-5.523 4.492-10.015 10.015-10.015 5.523 0 10.015 4.492 10.015 10.015 0 5.523-4.492 10.015-10.015 10.015z"/></svg>
+                             Send WhatsApp
+                           </>
+                        )}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
     </AppShell>
   );
 }

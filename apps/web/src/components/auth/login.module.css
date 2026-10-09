@@ -27,10 +27,6 @@
   flex: 0 0 59%;
   width: 59%;
   min-height: 100vh;
-  background-image: url('/assets/login-left-bg.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

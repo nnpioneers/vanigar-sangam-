@@ -54,37 +54,37 @@
 
 /* Variants */
 .primary {
-  background: linear-gradient(180deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-gold-400) 0%, var(--color-primary-500) 100%);
+  color: var(--color-espresso-950);
   border-color: var(--color-primary-700);
   box-shadow: 0 1px 2px rgba(43, 26, 18, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
   box-shadow: 0 2px 4px rgba(43, 26, 18, 0.18);
 }
 
 .primary:active:not(:disabled) {
-  background: var(--color-primary-700);
+  background: var(--color-primary-600);
   transform: translateY(1px);
 }
 
 .secondary {
-  background-color: var(--color-bg-surface);
-  color: var(--color-espresso-800);
-  border-color: var(--color-border-default);
-  box-shadow: var(--shadow-xs);
+  background: linear-gradient(135deg, var(--color-gold-400) 0%, var(--color-primary-500) 100%);
+  color: var(--color-espresso-950);
+  border-color: var(--color-primary-700);
+  box-shadow: 0 1px 2px rgba(43, 26, 18, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: var(--color-bg-surface-subtle);
-  border-color: var(--color-border-strong);
-  color: var(--color-espresso-950);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  box-shadow: 0 2px 4px rgba(43, 26, 18, 0.18);
 }
 
 .secondary:active:not(:disabled) {
-  background-color: var(--color-espresso-100);
+  background: var(--color-primary-600);
+  transform: translateY(1px);
 }
 
 .outline {
@@ -119,18 +119,20 @@
 }
 
 .danger {
-  background-color: var(--color-danger-500);
-  color: #ffffff;
-  border-color: var(--color-danger-700);
-  box-shadow: var(--shadow-xs);
+  background: linear-gradient(135deg, var(--color-gold-400) 0%, var(--color-primary-500) 100%);
+  color: var(--color-espresso-950);
+  border-color: var(--color-primary-700);
+  box-shadow: 0 1px 2px rgba(43, 26, 18, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .danger:hover:not(:disabled) {
-  background-color: var(--color-danger-600);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  box-shadow: 0 2px 4px rgba(43, 26, 18, 0.18);
 }
 
 .danger:active:not(:disabled) {
-  background-color: var(--color-danger-700);
+  background: var(--color-primary-600);
+  transform: translateY(1px);
 }
 
 .gold {

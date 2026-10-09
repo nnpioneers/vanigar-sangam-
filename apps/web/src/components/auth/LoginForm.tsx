@@ -306,7 +306,7 @@ export function LoginForm() {
         {/* Divider & card footer */}
         <hr className={styles.cardDivider} />
 
-        <p className={styles.cardFooter}>Vanigar Sangam &nbsp;|&nbsp; Lappaikudikadu</p>
+        <p className={styles.cardFooter}>Vanigar Sangam &nbsp;|&nbsp; Labbaikudikadu</p>
       </form>
     </div>
   );
